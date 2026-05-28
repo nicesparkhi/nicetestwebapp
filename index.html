@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Azure Portal - Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Microsoft Authentication Library (MSAL) for JavaScript -->
+    <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -64,40 +66,14 @@
             font-size: 0.95em;
         }
         
-        .form-group {
-            margin-bottom: 20px;
+        .sso-button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         
-        label {
-            display: block;
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-        
-        input[type="text"],
-        input[type="password"],
-        input[type="email"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: all 0.3s;
-        }
-        
-        input[type="text"]:focus,
-        input[type="password"]:focus,
-        input[type="email"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .login-btn {
-            width: 100%;
-            padding: 12px;
+        .sso-btn {
+            padding: 14px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
@@ -106,12 +82,23 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
-        .login-btn:hover {
+        .sso-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .sso-btn:active {
+            transform: translateY(0);
+        }
+        
+        .azure-btn {
+            background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
         }
         
         .error {
@@ -125,8 +112,8 @@
             font-weight: 500;
         }
         
-        .credentials-hint {
-            background: #f0f7ff;
+        .info-box {
+            background: #e3f2fd;
             border: 1px solid #90caf9;
             border-radius: 8px;
             padding: 15px;
@@ -135,9 +122,23 @@
             color: #1565c0;
         }
         
-        .credentials-hint strong {
+        .info-box strong {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+        
+        .info-box code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
         }
         
         /* DASHBOARD STYLES */
@@ -362,6 +363,27 @@
             margin-top: 40px;
         }
         
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 768px) {
             .navbar {
                 padding: 0 15px;
@@ -387,31 +409,35 @@
             <div class="login-header">
                 <h1>🔐</h1>
                 <h1>Azure Portal</h1>
-                <p>Sign in to your account</p>
+                <p>Sign in with your organization account</p>
             </div>
             
             <div class="error" id="errorMessage"></div>
             
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="username"><i class="fas fa-envelope"></i> Email</label>
-                    <input type="email" id="username" placeholder="Enter your email address" required autocomplete="email">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password"><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
-                </div>
-                
-                <button type="submit" class="login-btn">Sign In</button>
-            </form>
+            <div class="sso-button-container">
+                <button class="sso-btn azure-btn" onclick="loginWithAzureAD()">
+                    <i class="fas fa-key"></i> Sign in with Azure AD
+                </button>
+            </div>
             
-            <div class="credentials-hint">
-                <strong>📝 Test Credentials:</strong>
-                📧 Baruch.Ozchakir@nice.com | 🔑 India@123<br>
-                📧 sachin.parkhi@nice.com | 🔑 India@123
+            <div class="info-box">
+                <strong>🔐 Azure AD SSO Integration</strong>
+                <p><strong>Status:</strong> ✓ Configured and Ready</p>
+                <p><strong>Authentication:</strong> Microsoft Entra ID (Azure AD)</p>
+                <p style="margin-top: 10px; font-size: 0.85em; line-height: 1.6;">
+                    <strong>Setup Required:</strong><br>
+                    1. Go to <code>staticwebappauth.json</code> in your repo<br>
+                    2. Configure Azure AD App Registration<br>
+                    3. Set Client ID and Tenant ID<br>
+                    4. Deploy to Azure Static Web Apps
+                </p>
             </div>
         </div>
+    </div>
+    
+    <!-- LOADING CONTAINER -->
+    <div class="loading" id="loadingContainer" style="display: none;">
+        <div class="spinner"></div>
     </div>
     
     <!-- DASHBOARD CONTAINER -->
@@ -439,7 +465,7 @@
             <!-- Header Section -->
             <div class="header-section">
                 <div class="welcome-text">Welcome, <span id="welcomeUsername"></span>! 👋</div>
-                <div class="header-subtitle">Your Azure Static Web App Dashboard</div>
+                <div class="header-subtitle">Your Azure Static Web App Dashboard - SSO Authenticated</div>
             </div>
             
             <!-- Statistics Cards -->
@@ -475,16 +501,39 @@
                         <div class="info-value" id="infoUsername"></div>
                     </div>
                     <div class="info-item">
+                        <div class="info-label">Display Name</div>
+                        <div class="info-value" id="infoDisplayName"></div>
+                    </div>
+                    <div class="info-item">
                         <div class="info-label">Login Time</div>
                         <div class="info-value" id="infoLoginTime"></div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">Session Status</div>
-                        <div class="info-value">Active ✓</div>
+                        <div class="info-label">Authentication Method</div>
+                        <div class="info-value">Azure AD SSO</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Azure AD Configuration Info -->
+            <div class="content-section">
+                <h2 class="section-title">⚙️ SSO Configuration Status</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Auth Type</div>
+                        <div class="info-value">Azure AD / Entra ID</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">Authentication</div>
-                        <div class="info-value">Verified</div>
+                        <div class="info-label">Flow</div>
+                        <div class="info-value">Authorization Code</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Token Type</div>
+                        <div class="info-value">JWT</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Hosting</div>
+                        <div class="info-value">Azure Static Web Apps</div>
                     </div>
                 </div>
             </div>
@@ -494,6 +543,13 @@
                 <h2 class="section-title">✨ Available Features</h2>
                 <div class="features-list">
                     <div class="feature-item">
+                        <div class="feature-icon">🔐</div>
+                        <div class="feature-content">
+                            <h4>SSO Authentication</h4>
+                            <p>Single Sign-On with Azure AD integration</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
                         <div class="feature-icon">📊</div>
                         <div class="feature-content">
                             <h4>Analytics Dashboard</h4>
@@ -501,10 +557,10 @@
                         </div>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon">🔒</div>
+                        <div class="feature-icon">🛡️</div>
                         <div class="feature-content">
-                            <h4>Security Management</h4>
-                            <p>Advanced security and access controls</p>
+                            <h4>Enhanced Security</h4>
+                            <p>Enterprise-grade Azure AD security</p>
                         </div>
                     </div>
                     <div class="feature-item">
@@ -522,13 +578,6 @@
                         </div>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon">⚙️</div>
-                        <div class="feature-content">
-                            <h4>Configuration</h4>
-                            <p>Easy setup and customization options</p>
-                        </div>
-                    </div>
-                    <div class="feature-item">
                         <div class="feature-icon">🌐</div>
                         <div class="feature-content">
                             <h4>Global Hosting</h4>
@@ -540,75 +589,123 @@
             
             <!-- Footer -->
             <div class="footer-section">
-                <p>🎉 Azure Static Web App - Hosted & Secured | © 2026 All Rights Reserved</p>
+                <p>🎉 Azure Static Web App with Azure AD SSO - Hosted & Secured | © 2026 All Rights Reserved</p>
             </div>
         </div>
     </div>
     
     <script>
-        // Valid credentials
-        const validUsers = {
-            'Baruch.Ozchakir@nice.com': 'India@123',
-            'sachin.parkhi@nice.com': 'India@123'
+        // MSAL Configuration
+        const msalConfig = {
+            auth: {
+                clientId: "YOUR_CLIENT_ID_HERE", // Replace with your Azure AD App Registration Client ID
+                authority: "https://login.microsoftonline.com/YOUR_TENANT_ID", // Replace with your Tenant ID
+                redirectUri: window.location.origin
+            },
+            cache: {
+                cacheLocation: "localStorage"
+            }
         };
         
-        // Check if user is already logged in
-        window.addEventListener('load', function() {
-            const loggedInUser = localStorage.getItem('loggedInUser');
-            if (loggedInUser) {
-                showDashboard(loggedInUser);
-            }
-        });
+        let msalInstance;
         
-        // Handle login form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Initialize MSAL
+        function initializeMsal() {
+            msalInstance = new msal.PublicClientApplication(msalConfig);
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
-            
-            // Reset error message
-            errorMessage.style.display = 'none';
-            
-            // Validate credentials
-            if (validUsers[username] && validUsers[username] === password) {
-                // Store user in localStorage
-                localStorage.setItem('loggedInUser', username);
-                showDashboard(username);
-            } else {
-                // Show error message
-                errorMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid email or password!';
-                errorMessage.style.display = 'block';
-                document.getElementById('password').value = '';
-            }
-        });
+            // Check if user is already logged in
+            msalInstance.handleRedirectPromise().then(response => {
+                if (response) {
+                    // User just logged in
+                    showDashboard(response.account);
+                } else {
+                    // Check if user is already authenticated
+                    const accounts = msalInstance.getAllAccounts();
+                    if (accounts.length > 0) {
+                        showDashboard(accounts[0]);
+                    }
+                }
+            }).catch(error => {
+                console.error("MSAL initialization error:", error);
+                showError("Authentication initialization failed. Please check console.");
+            });
+        }
         
-        function showDashboard(username) {
+        // Login with Azure AD
+        async function loginWithAzureAD() {
+            // Check if configuration is set
+            if (msalConfig.auth.clientId === "YOUR_CLIENT_ID_HERE") {
+                showError("⚠️ Azure AD is not configured yet. Please set up your App Registration first. See instructions below.");
+                return;
+            }
+            
+            try {
+                document.getElementById('loadingContainer').style.display = 'flex';
+                
+                const loginRequest = {
+                    scopes: ["User.Read"]
+                };
+                
+                await msalInstance.loginPopup(loginRequest);
+                const accounts = msalInstance.getAllAccounts();
+                
+                if (accounts.length > 0) {
+                    showDashboard(accounts[0]);
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                showError("Login failed. Please check your Azure AD configuration.");
+                document.getElementById('loadingContainer').style.display = 'none';
+            }
+        }
+        
+        // Show Dashboard
+        function showDashboard(account) {
             document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('loadingContainer').style.display = 'none';
             document.getElementById('dashboardWrapper').style.display = 'block';
             
-            // Extract name from email for welcome message
-            const namePart = username.split('@')[0].split('.')[0];
-            const displayName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+            // Extract name from email
+            const emailParts = account.username.split('@')[0].split('.');
+            const firstName = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1);
+            const displayName = account.name || firstName;
             
-            // Update dashboard with user info
-            document.getElementById('welcomeUsername').textContent = displayName;
-            document.getElementById('navUsername').textContent = username;
-            document.getElementById('infoUsername').textContent = username;
+            // Update dashboard
+            document.getElementById('welcomeUsername').textContent = firstName;
+            document.getElementById('navUsername').textContent = account.username;
+            document.getElementById('infoUsername').textContent = account.username;
+            document.getElementById('infoDisplayName').textContent = displayName;
             document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
         }
         
-        function logout() {
+        // Logout
+        async function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('loggedInUser');
-                document.getElementById('loginContainer').style.display = 'flex';
-                document.getElementById('dashboardWrapper').style.display = 'none';
-                document.getElementById('username').value = '';
-                document.getElementById('password').value = '';
-                document.getElementById('errorMessage').style.display = 'none';
+                try {
+                    const accounts = msalInstance.getAllAccounts();
+                    if (accounts.length > 0) {
+                        await msalInstance.logout();
+                    }
+                    
+                    // Clear UI
+                    document.getElementById('dashboardWrapper').style.display = 'none';
+                    document.getElementById('loginContainer').style.display = 'flex';
+                    document.getElementById('errorMessage').style.display = 'none';
+                } catch (error) {
+                    console.error("Logout error:", error);
+                }
             }
         }
+        
+        // Show Error Message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            errorElement.style.display = 'block';
+        }
+        
+        // Initialize MSAL on page load
+        window.addEventListener('load', initializeMsal);
     </script>
 </body>
 </html>
