@@ -77,7 +77,8 @@
         }
         
         input[type="text"],
-        input[type="password"] {
+        input[type="password"],
+        input[type="email"] {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
@@ -87,7 +88,8 @@
         }
         
         input[type="text"]:focus,
-        input[type="password"]:focus {
+        input[type="password"]:focus,
+        input[type="email"]:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -312,6 +314,7 @@
             color: #333;
             font-size: 1.1em;
             font-weight: 600;
+            word-break: break-all;
         }
         
         .features-list {
@@ -391,8 +394,8 @@
             
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="username"><i class="fas fa-user"></i> Username</label>
-                    <input type="text" id="username" placeholder="Enter your username" required autocomplete="username">
+                    <label for="username"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="username" placeholder="Enter your email address" required autocomplete="email">
                 </div>
                 
                 <div class="form-group">
@@ -405,8 +408,8 @@
             
             <div class="credentials-hint">
                 <strong>📝 Test Credentials:</strong>
-                👤 Baruch | 🔑 India@123<br>
-                👤 Sachin | 🔑 India@123
+                📧 Baruch.Ozchakir@nice.com | 🔑 India@123<br>
+                📧 sachin.parkhi@nice.com | 🔑 India@123
             </div>
         </div>
     </div>
@@ -468,7 +471,7 @@
                 <h2 class="section-title">👤 User Information</h2>
                 <div class="info-grid">
                     <div class="info-item">
-                        <div class="info-label">Username</div>
+                        <div class="info-label">Email Address</div>
                         <div class="info-value" id="infoUsername"></div>
                     </div>
                     <div class="info-item">
@@ -545,8 +548,8 @@
     <script>
         // Valid credentials
         const validUsers = {
-            'Baruch': 'India@123',
-            'Sachin': 'India@123'
+            'Baruch.Ozchakir@nice.com': 'India@123',
+            'sachin.parkhi@nice.com': 'India@123'
         };
         
         // Check if user is already logged in
@@ -575,7 +578,7 @@
                 showDashboard(username);
             } else {
                 // Show error message
-                errorMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid username or password!';
+                errorMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid email or password!';
                 errorMessage.style.display = 'block';
                 document.getElementById('password').value = '';
             }
@@ -585,8 +588,12 @@
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('dashboardWrapper').style.display = 'block';
             
+            // Extract name from email for welcome message
+            const namePart = username.split('@')[0].split('.')[0];
+            const displayName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+            
             // Update dashboard with user info
-            document.getElementById('welcomeUsername').textContent = username;
+            document.getElementById('welcomeUsername').textContent = displayName;
             document.getElementById('navUsername').textContent = username;
             document.getElementById('infoUsername').textContent = username;
             document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
