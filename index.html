@@ -112,6 +112,17 @@
             font-weight: 500;
         }
         
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #2e7d32;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 500;
+        }
+        
         .info-box {
             background: #e8f5e9;
             border: 1px solid #81c784;
@@ -368,15 +379,22 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
+        }
+        
+        .loading-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 1.1em;
         }
         
         @keyframes spin {
@@ -413,6 +431,7 @@
             </div>
             
             <div class="error" id="errorMessage"></div>
+            <div class="success" id="successMessage"></div>
             
             <div class="sso-button-container">
                 <button class="sso-btn azure-btn" onclick="loginWithAzureAD()">
@@ -424,14 +443,17 @@
                 <strong>✅ Azure AD SSO - Active</strong>
                 <p><strong>Status:</strong> ✓ Fully Configured & Ready</p>
                 <p><strong>Authentication:</strong> Microsoft Entra ID (Azure AD)</p>
-                <p><strong>Client ID:</strong> <code>338caa2b-ef86-4a5f-91b1-03f6b9847e1a</code></p>
+                <p><strong>Flow:</strong> Authorization Code with PKCE</p>
             </div>
         </div>
     </div>
     
     <!-- LOADING CONTAINER -->
     <div class="loading" id="loadingContainer" style="display: none;">
-        <div class="spinner"></div>
+        <div>
+            <div class="spinner"></div>
+            <div class="loading-text">Authenticating with Azure AD...</div>
+        </div>
     </div>
     
     <!-- DASHBOARD CONTAINER -->
@@ -594,74 +616,109 @@
             auth: {
                 clientId: "338caa2b-ef86-4a5f-91b1-03f6b9847e1a",
                 authority: "https://login.microsoftonline.com/7123dabd-0e87-4da9-9cb9-b7ec82011aad",
-                redirectUri: window.location.origin
+                redirectUri: window.location.origin,
+                postLogoutRedirectUri: window.location.origin,
+                navigateToLoginRequestUrl: true
             },
             cache: {
-                cacheLocation: "localStorage"
+                cacheLocation: "localStorage",
+                storeAuthStateInCookie: true
+            },
+            system: {
+                allowNativeBroker: false,
+                loggerOptions: {
+                    loggerCallback: (level, message, containsPii) => {
+                        if (!containsPii) {
+                            console.log(`[MSAL] ${message}`);
+                        }
+                    },
+                    piiLoggingEnabled: false,
+                    logLevel: msal.LogLevel.Info
+                }
             }
+        };
+        
+        const loginRequest = {
+            scopes: ["User.Read"],
+            prompt: "select_account"
         };
         
         let msalInstance;
         
         // Initialize MSAL
-        function initializeMsal() {
+        async function initializeMsal() {
             try {
+                console.log("Initializing MSAL...");
                 msalInstance = new msal.PublicClientApplication(msalConfig);
                 
-                // Check if user is already logged in
-                msalInstance.handleRedirectPromise().then(response => {
+                // Initialize the client
+                await msalInstance.initialize();
+                console.log("MSAL initialized successfully");
+                
+                // Handle redirect promise first
+                try {
+                    const response = await msalInstance.handleRedirectPromise();
                     if (response) {
-                        // User just logged in
-                        console.log("User logged in successfully");
+                        console.log("Redirect response received:", response);
                         showDashboard(response.account);
-                    } else {
-                        // Check if user is already authenticated
-                        const accounts = msalInstance.getAllAccounts();
-                        if (accounts.length > 0) {
-                            console.log("User session found");
-                            showDashboard(accounts[0]);
-                        }
+                        return;
                     }
-                }).catch(error => {
-                    console.error("MSAL initialization error:", error);
-                    showError("Authentication initialization error. Please refresh the page.");
-                });
+                } catch (error) {
+                    console.error("Error handling redirect:", error);
+                }
+                
+                // Check if already logged in
+                const accounts = msalInstance.getAllAccounts();
+                console.log("Number of accounts found:", accounts.length);
+                
+                if (accounts.length > 0) {
+                    console.log("User already logged in:", accounts[0].username);
+                    showDashboard(accounts[0]);
+                } else {
+                    console.log("No user logged in, showing login page");
+                }
             } catch (error) {
-                console.error("MSAL setup error:", error);
-                showError("Failed to initialize authentication. Please check console for details.");
+                console.error("MSAL initialization error:", error);
+                showError("Failed to initialize authentication. Please refresh the page.");
             }
         }
         
-        // Login with Azure AD
+        // Login with Azure AD using Redirect Flow
         async function loginWithAzureAD() {
             try {
+                console.log("Starting login with redirect flow...");
                 document.getElementById('loadingContainer').style.display = 'flex';
                 
-                const loginRequest = {
-                    scopes: ["User.Read"]
-                };
-                
-                const response = await msalInstance.loginPopup(loginRequest);
-                console.log("Login successful:", response);
-                showDashboard(response.account);
+                await msalInstance.loginPopup(loginRequest).catch(async (error) => {
+                    console.warn("Popup login failed, trying redirect flow:", error.errorCode);
+                    // Fallback to redirect flow
+                    await msalInstance.loginRedirect(loginRequest);
+                });
             } catch (error) {
                 console.error("Login error:", error);
+                document.getElementById('loadingContainer').style.display = 'none';
                 
                 // Handle specific error cases
                 if (error.errorCode === "user_cancelled") {
                     console.log("User cancelled the login");
-                } else if (error.errorCode === "invalid_scope") {
-                    showError("Invalid scope. Please check Azure AD configuration.");
+                } else if (error.errorCode === "COOP_error") {
+                    console.log("COOP error detected, using redirect flow");
+                    try {
+                        await msalInstance.loginRedirect(loginRequest);
+                    } catch (redirectError) {
+                        console.error("Redirect login failed:", redirectError);
+                        showError("Login failed. Please try again.");
+                    }
                 } else {
                     showError(`Login failed: ${error.errorMessage || error.errorCode}`);
                 }
-                
-                document.getElementById('loadingContainer').style.display = 'none';
             }
         }
         
         // Show Dashboard
         function showDashboard(account) {
+            console.log("Showing dashboard for:", account.username);
+            
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('loadingContainer').style.display = 'none';
             document.getElementById('dashboardWrapper').style.display = 'block';
@@ -678,23 +735,27 @@
             document.getElementById('infoDisplayName').textContent = displayName;
             document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
             
-            console.log("Dashboard updated for user:", account.username);
+            console.log("Dashboard updated successfully");
         }
         
         // Logout
         async function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 try {
+                    console.log("Logging out...");
                     const accounts = msalInstance.getAllAccounts();
                     if (accounts.length > 0) {
-                        await msalInstance.logout();
+                        await msalInstance.logoutPopup().catch(async (error) => {
+                            console.warn("Popup logout failed, trying redirect:", error);
+                            await msalInstance.logoutRedirect();
+                        });
                     }
                     
                     // Clear UI
                     document.getElementById('dashboardWrapper').style.display = 'none';
                     document.getElementById('loginContainer').style.display = 'flex';
                     document.getElementById('errorMessage').style.display = 'none';
-                    console.log("User logged out");
+                    console.log("Logout successful");
                 } catch (error) {
                     console.error("Logout error:", error);
                     showError("Logout failed. Please try again.");
