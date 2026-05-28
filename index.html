@@ -113,13 +113,13 @@
         }
         
         .info-box {
-            background: #e3f2fd;
-            border: 1px solid #90caf9;
+            background: #e8f5e9;
+            border: 1px solid #81c784;
             border-radius: 8px;
             padding: 15px;
             margin-top: 25px;
             font-size: 0.9em;
-            color: #1565c0;
+            color: #2e7d32;
         }
         
         .info-box strong {
@@ -421,16 +421,10 @@
             </div>
             
             <div class="info-box">
-                <strong>🔐 Azure AD SSO Integration</strong>
-                <p><strong>Status:</strong> ✓ Configured and Ready</p>
+                <strong>✅ Azure AD SSO - Active</strong>
+                <p><strong>Status:</strong> ✓ Fully Configured & Ready</p>
                 <p><strong>Authentication:</strong> Microsoft Entra ID (Azure AD)</p>
-                <p style="margin-top: 10px; font-size: 0.85em; line-height: 1.6;">
-                    <strong>Setup Required:</strong><br>
-                    1. Go to <code>staticwebappauth.json</code> in your repo<br>
-                    2. Configure Azure AD App Registration<br>
-                    3. Set Client ID and Tenant ID<br>
-                    4. Deploy to Azure Static Web Apps
-                </p>
+                <p><strong>Client ID:</strong> <code>338caa2b-ef86-4a5f-91b1-03f6b9847e1a</code></p>
             </div>
         </div>
     </div>
@@ -595,11 +589,11 @@
     </div>
     
     <script>
-        // MSAL Configuration
+        // MSAL Configuration with your Azure AD Credentials
         const msalConfig = {
             auth: {
-                clientId: "YOUR_CLIENT_ID_HERE", // Replace with your Azure AD App Registration Client ID
-                authority: "https://login.microsoftonline.com/YOUR_TENANT_ID", // Replace with your Tenant ID
+                clientId: "338caa2b-ef86-4a5f-91b1-03f6b9847e1a",
+                authority: "https://login.microsoftonline.com/7123dabd-0e87-4da9-9cb9-b7ec82011aad",
                 redirectUri: window.location.origin
             },
             cache: {
@@ -611,34 +605,35 @@
         
         // Initialize MSAL
         function initializeMsal() {
-            msalInstance = new msal.PublicClientApplication(msalConfig);
-            
-            // Check if user is already logged in
-            msalInstance.handleRedirectPromise().then(response => {
-                if (response) {
-                    // User just logged in
-                    showDashboard(response.account);
-                } else {
-                    // Check if user is already authenticated
-                    const accounts = msalInstance.getAllAccounts();
-                    if (accounts.length > 0) {
-                        showDashboard(accounts[0]);
+            try {
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                
+                // Check if user is already logged in
+                msalInstance.handleRedirectPromise().then(response => {
+                    if (response) {
+                        // User just logged in
+                        console.log("User logged in successfully");
+                        showDashboard(response.account);
+                    } else {
+                        // Check if user is already authenticated
+                        const accounts = msalInstance.getAllAccounts();
+                        if (accounts.length > 0) {
+                            console.log("User session found");
+                            showDashboard(accounts[0]);
+                        }
                     }
-                }
-            }).catch(error => {
-                console.error("MSAL initialization error:", error);
-                showError("Authentication initialization failed. Please check console.");
-            });
+                }).catch(error => {
+                    console.error("MSAL initialization error:", error);
+                    showError("Authentication initialization error. Please refresh the page.");
+                });
+            } catch (error) {
+                console.error("MSAL setup error:", error);
+                showError("Failed to initialize authentication. Please check console for details.");
+            }
         }
         
         // Login with Azure AD
         async function loginWithAzureAD() {
-            // Check if configuration is set
-            if (msalConfig.auth.clientId === "YOUR_CLIENT_ID_HERE") {
-                showError("⚠️ Azure AD is not configured yet. Please set up your App Registration first. See instructions below.");
-                return;
-            }
-            
             try {
                 document.getElementById('loadingContainer').style.display = 'flex';
                 
@@ -646,15 +641,21 @@
                     scopes: ["User.Read"]
                 };
                 
-                await msalInstance.loginPopup(loginRequest);
-                const accounts = msalInstance.getAllAccounts();
-                
-                if (accounts.length > 0) {
-                    showDashboard(accounts[0]);
-                }
+                const response = await msalInstance.loginPopup(loginRequest);
+                console.log("Login successful:", response);
+                showDashboard(response.account);
             } catch (error) {
                 console.error("Login error:", error);
-                showError("Login failed. Please check your Azure AD configuration.");
+                
+                // Handle specific error cases
+                if (error.errorCode === "user_cancelled") {
+                    console.log("User cancelled the login");
+                } else if (error.errorCode === "invalid_scope") {
+                    showError("Invalid scope. Please check Azure AD configuration.");
+                } else {
+                    showError(`Login failed: ${error.errorMessage || error.errorCode}`);
+                }
+                
                 document.getElementById('loadingContainer').style.display = 'none';
             }
         }
@@ -676,6 +677,8 @@
             document.getElementById('infoUsername').textContent = account.username;
             document.getElementById('infoDisplayName').textContent = displayName;
             document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
+            
+            console.log("Dashboard updated for user:", account.username);
         }
         
         // Logout
@@ -691,8 +694,10 @@
                     document.getElementById('dashboardWrapper').style.display = 'none';
                     document.getElementById('loginContainer').style.display = 'flex';
                     document.getElementById('errorMessage').style.display = 'none';
+                    console.log("User logged out");
                 } catch (error) {
                     console.error("Logout error:", error);
+                    showError("Logout failed. Please try again.");
                 }
             }
         }
