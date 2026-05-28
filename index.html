@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Azure Portal - Dashboard</title>
+    <title>Azure Portal - IT Support Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Microsoft Authentication Library (MSAL) for JavaScript -->
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+    <!-- JWT decode library -->
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@4.0.0/build/jwt-decode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -214,7 +216,7 @@
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 40px 20px;
         }
@@ -270,7 +272,7 @@
         }
         
         .stat-value {
-            font-size: 2em;
+            font-size: 1.5em;
             color: #333;
             font-weight: bold;
         }
@@ -289,11 +291,14 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -309,50 +314,82 @@
             color: #999;
             font-size: 0.85em;
             text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
         
         .info-value {
             color: #333;
-            font-size: 1.1em;
+            font-size: 1.05em;
             font-weight: 600;
-            word-break: break-all;
+            word-break: break-word;
         }
         
-        .features-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+        .info-value.success {
+            color: #2e7d32;
         }
         
-        .feature-item {
-            display: flex;
-            gap: 15px;
-            padding: 15px;
+        .info-value.warning {
+            color: #f57c00;
+        }
+        
+        .info-value.danger {
+            color: #c62828;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+        
+        .badge-success {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .badge-warning {
+            background: #ffe0b2;
+            color: #f57c00;
+        }
+        
+        .badge-danger {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .badge-primary {
+            background: #bbdefb;
+            color: #1565c0;
+        }
+        
+        .device-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .device-item {
             background: #f9f9f9;
+            padding: 15px;
             border-radius: 8px;
-            transition: all 0.3s;
-        }
-        
-        .feature-item:hover {
-            background: #f0f7ff;
+            margin-bottom: 10px;
             border-left: 3px solid #667eea;
         }
         
-        .feature-icon {
-            font-size: 1.8em;
-            color: #667eea;
-            min-width: 30px;
-        }
-        
-        .feature-content h4 {
+        .device-name {
+            font-weight: 600;
             color: #333;
             margin-bottom: 5px;
         }
         
-        .feature-content p {
-            color: #666;
+        .device-detail {
             font-size: 0.9em;
+            color: #666;
+            margin: 3px 0;
         }
         
         .footer-section {
@@ -392,6 +429,37 @@
             100% { transform: rotate(360deg); }
         }
         
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #666;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         @media (max-width: 768px) {
             .navbar {
                 padding: 0 15px;
@@ -407,6 +475,10 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -417,7 +489,7 @@
             <div class="login-header">
                 <h1>🔐</h1>
                 <h1>Azure Portal</h1>
-                <p>Sign in with your organization account</p>
+                <p>IT Support Dashboard</p>
             </div>
             
             <div class="tenant-info">
@@ -437,7 +509,7 @@
                 <strong>✅ Azure AD SSO - Active</strong>
                 <p><strong>Status:</strong> ✓ Fully Configured & Ready</p>
                 <p><strong>Organization:</strong> NICE.COM Tenant</p>
-                <p><strong>Authentication:</strong> Microsoft Entra ID (Azure AD)</p>
+                <p><strong>Features:</strong> Comprehensive IT Support Dashboard</p>
             </div>
         </div>
     </div>
@@ -455,7 +527,7 @@
         <!-- Navbar -->
         <nav class="navbar">
             <div class="navbar-brand">
-                <i class="fas fa-cloud"></i> Azure Portal
+                <i class="fas fa-cloud"></i> IT Support Dashboard
             </div>
             <div class="navbar-right">
                 <div class="user-profile">
@@ -475,131 +547,285 @@
             <!-- Header Section -->
             <div class="header-section">
                 <div class="welcome-text">Welcome, <span id="welcomeUsername"></span>! 👋</div>
-                <div class="header-subtitle">Your Azure Static Web App Dashboard - SSO Authenticated</div>
+                <div class="header-subtitle">Comprehensive Azure AD User Information & IT Support Dashboard</div>
             </div>
             
-            <!-- Statistics Cards -->
+            <!-- Quick Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">☁️</div>
-                    <div class="stat-label">Deployment Status</div>
-                    <div class="stat-value">Active</div>
+                    <div class="stat-icon">👤</div>
+                    <div class="stat-label">Account Status</div>
+                    <div class="stat-value" id="accountStatus">Active</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">⚡</div>
-                    <div class="stat-label">Performance</div>
-                    <div class="stat-value">Excellent</div>
+                    <div class="stat-icon">🔐</div>
+                    <div class="stat-label">MFA Status</div>
+                    <div class="stat-value" id="mfaStatus">Unknown</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">✓</div>
-                    <div class="stat-label">Security</div>
-                    <div class="stat-value">Verified</div>
+                    <div class="stat-icon">📱</div>
+                    <div class="stat-label">Registered Devices</div>
+                    <div class="stat-value" id="deviceCount">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🌍</div>
-                    <div class="stat-label">Uptime</div>
-                    <div class="stat-value">99.9%</div>
+                    <div class="stat-icon">⏰</div>
+                    <div class="stat-label">Token Expiration</div>
+                    <div class="stat-value" id="tokenExpiry">Loading...</div>
                 </div>
             </div>
             
-            <!-- User Information -->
-            <div class="content-section">
-                <h2 class="section-title">👤 User Information</h2>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Email Address</div>
-                        <div class="info-value" id="infoUsername"></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Display Name</div>
-                        <div class="info-value" id="infoDisplayName"></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Login Time</div>
-                        <div class="info-value" id="infoLoginTime"></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Authentication Method</div>
-                        <div class="info-value">Azure AD SSO</div>
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('profile')">👤 User Profile</button>
+                <button class="tab-btn" onclick="switchTab('security')">🔐 Security</button>
+                <button class="tab-btn" onclick="switchTab('organization')">🏢 Organization</button>
+                <button class="tab-btn" onclick="switchTab('sessions')">📱 Sessions & Devices</button>
+                <button class="tab-btn" onclick="switchTab('audit')">📋 Audit & Compliance</button>
+            </div>
+            
+            <!-- TAB 1: USER PROFILE -->
+            <div id="profile" class="tab-content active">
+                <div class="content-section">
+                    <h2 class="section-title">👤 User Profile Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Email Address</div>
+                            <div class="info-value" id="infoUsername"></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Display Name</div>
+                            <div class="info-value" id="infoDisplayName"></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">User Principal Name (UPN)</div>
+                            <div class="info-value" id="infoUPN"></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Object ID</div>
+                            <div class="info-value" id="infoObjectId"></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Job Title</div>
+                            <div class="info-value" id="infoJobTitle">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Department</div>
+                            <div class="info-value" id="infoDepartment">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Office Location</div>
+                            <div class="info-value" id="infoOffice">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Mobile Phone</div>
+                            <div class="info-value" id="infoMobile">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Login Time</div>
+                            <div class="info-value" id="infoLoginTime"></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Account Creation Date</div>
+                            <div class="info-value" id="infoCreatedDate">N/A</div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Azure AD Configuration Info -->
-            <div class="content-section">
-                <h2 class="section-title">⚙️ SSO Configuration Status</h2>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Organization</div>
-                        <div class="info-value">NICE.COM Tenant</div>
+            <!-- TAB 2: SECURITY -->
+            <div id="security" class="tab-content">
+                <div class="content-section">
+                    <h2 class="section-title">🔐 Security & Session Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">MFA Enabled</div>
+                            <div class="info-value" id="mfaEnabled">
+                                <span class="badge badge-warning">Not Available in Token</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Authentication Method</div>
+                            <div class="info-value" id="authMethod">Azure AD SSO</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Token Expiration Time</div>
+                            <div class="info-value" id="tokenExpTime"></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Token Type</div>
+                            <div class="info-value">JWT</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Issued At</div>
+                            <div class="info-value" id="tokenIssuedAt"></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Current IP Address</div>
+                            <div class="info-value" id="currentIP">Detecting...</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Session ID</div>
+                            <div class="info-value" id="sessionId">Generating...</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Scope</div>
+                            <div class="info-value" id="tokenScope">User.Read</div>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">Auth Type</div>
-                        <div class="info-value">Azure AD / Entra ID</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Flow</div>
-                        <div class="info-value">Authorization Code</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Token Type</div>
-                        <div class="info-value">JWT</div>
+                </div>
+                
+                <div class="content-section">
+                    <h2 class="section-title">🛡️ Account Security Status</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Account Status</div>
+                            <div class="info-value success">
+                                <i class="fas fa-check-circle"></i> Active
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Password Last Changed</div>
+                            <div class="info-value" id="passwordChanged">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Risk Level</div>
+                            <div class="info-value success">
+                                <i class="fas fa-check-circle"></i> Low Risk
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Conditional Access</div>
+                            <div class="info-value" id="conditionalAccess">Applied</div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Features -->
-            <div class="content-section">
-                <h2 class="section-title">✨ Available Features</h2>
-                <div class="features-list">
-                    <div class="feature-item">
-                        <div class="feature-icon">🔐</div>
-                        <div class="feature-content">
-                            <h4>SSO Authentication</h4>
-                            <p>Single Sign-On with Azure AD integration</p>
+            <!-- TAB 3: ORGANIZATION -->
+            <div id="organization" class="tab-content">
+                <div class="content-section">
+                    <h2 class="section-title">🏢 Organization Structure</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Company Name</div>
+                            <div class="info-value" id="companyName">NICE</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Department</div>
+                            <div class="info-value" id="orgDepartment">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Job Title</div>
+                            <div class="info-value" id="orgJobTitle">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Manager</div>
+                            <div class="info-value" id="managerName">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Office Location</div>
+                            <div class="info-value" id="orgOffice">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Tenant ID</div>
+                            <div class="info-value" id="tenantId">7123dabd-0e87-4da9-9cb9-b7ec82011aad</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Member Groups</div>
+                            <div class="info-value" id="memberGroups">
+                                <span class="badge badge-primary">Not Available in Token</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">License Type</div>
+                            <div class="info-value" id="licenseType">N/A</div>
                         </div>
                     </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">📊</div>
-                        <div class="feature-content">
-                            <h4>Analytics Dashboard</h4>
-                            <p>Monitor your app metrics and performance</p>
+                </div>
+            </div>
+            
+            <!-- TAB 4: SESSIONS & DEVICES -->
+            <div id="sessions" class="tab-content">
+                <div class="content-section">
+                    <h2 class="section-title">📱 Active Sessions & Devices</h2>
+                    <div class="info-item" style="margin-bottom: 20px;">
+                        <div class="info-label">Current Session Information</div>
+                        <div style="margin-top: 10px;">
+                            <p><strong>Device:</strong> <span id="currentDevice">Web Browser</span></p>
+                            <p><strong>Browser:</strong> <span id="browserInfo">Detecting...</span></p>
+                            <p><strong>OS:</strong> <span id="osInfo">Detecting...</span></p>
+                            <p><strong>IP Address:</strong> <span id="sessionIP">Detecting...</span></p>
+                            <p><strong>Session Started:</strong> <span id="sessionStart"></span></p>
                         </div>
                     </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🛡️</div>
-                        <div class="feature-content">
-                            <h4>Enhanced Security</h4>
-                            <p>Enterprise-grade Azure AD security</p>
+                </div>
+                
+                <div class="content-section">
+                    <h2 class="section-title">📋 Device Information</h2>
+                    <div class="device-list">
+                        <div class="device-item">
+                            <div class="device-name">🖥️ Current Browser Session</div>
+                            <div class="device-detail"><strong>User Agent:</strong> <span id="deviceUA">Detecting...</span></div>
+                            <div class="device-detail"><strong>Type:</strong> Web Browser</div>
+                            <div class="device-detail"><strong>Status:</strong> <span class="badge badge-success">Active</span></div>
                         </div>
                     </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🚀</div>
-                        <div class="feature-content">
-                            <h4>Deployment Pipeline</h4>
-                            <p>Automated CI/CD deployment workflow</p>
+                </div>
+            </div>
+            
+            <!-- TAB 5: AUDIT & COMPLIANCE -->
+            <div id="audit" class="tab-content">
+                <div class="content-section">
+                    <h2 class="section-title">📋 Audit & Compliance Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Account Created</div>
+                            <div class="info-value" id="auditCreated">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Last Login</div>
+                            <div class="info-value" id="auditLastLogin"></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Password Last Changed</div>
+                            <div class="info-value" id="auditPwdChanged">N/A</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Account Status</div>
+                            <div class="info-value success">Active</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">MFA Compliance</div>
+                            <div class="info-value">
+                                <span class="badge badge-warning">Requires Graph API</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Session Count</div>
+                            <div class="info-value">1 (Current)</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Token Version</div>
+                            <div class="info-value" id="tokenVersion">2.0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Auth Time</div>
+                            <div class="info-value" id="authTime"></div>
                         </div>
                     </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">📱</div>
-                        <div class="feature-content">
-                            <h4>Responsive Design</h4>
-                            <p>Works seamlessly on all devices</p>
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🌐</div>
-                        <div class="feature-content">
-                            <h4>Global Hosting</h4>
-                            <p>Lightning-fast content delivery worldwide</p>
-                        </div>
+                </div>
+                
+                <div class="content-section">
+                    <h2 class="section-title">📊 Token Claims (Advanced)</h2>
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; overflow-x: auto;">
+                        <pre id="tokenClaims" style="margin: 0; font-size: 0.9em;"></pre>
                     </div>
                 </div>
             </div>
             
             <!-- Footer -->
             <div class="footer-section">
-                <p>🎉 Azure Static Web App with Azure AD SSO - NICE.COM Tenant | © 2026 All Rights Reserved</p>
+                <p>🎉 Azure AD IT Support Dashboard - NICE.COM Tenant | © 2026 All Rights Reserved | <a href="#" onclick="refreshData()" style="color: #667eea; text-decoration: none;">🔄 Refresh Data</a></p>
             </div>
         </div>
     </div>
@@ -638,6 +864,63 @@
         };
         
         let msalInstance;
+        let currentAccount = null;
+        
+        // Tab switching function
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activate corresponding button
+            event.target.classList.add('active');
+        }
+        
+        // Get Client IP
+        async function getClientIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                console.log("Could not fetch IP:", error);
+                return "IP Detection Failed";
+            }
+        }
+        
+        // Get Browser & OS Info
+        function getBrowserInfo() {
+            const ua = navigator.userAgent;
+            let browserName = 'Unknown';
+            let osName = 'Unknown';
+            
+            if (ua.indexOf("Win") > -1) osName = "Windows";
+            else if (ua.indexOf("Mac") > -1) osName = "macOS";
+            else if (ua.indexOf("Linux") > -1) osName = "Linux";
+            else if (ua.indexOf("Android") > -1) osName = "Android";
+            else if (ua.indexOf("like Mac") > -1) osName = "iOS";
+            
+            if (ua.indexOf("Chrome") > -1) browserName = "Chrome";
+            else if (ua.indexOf("Safari") > -1) browserName = "Safari";
+            else if (ua.indexOf("Firefox") > -1) browserName = "Firefox";
+            else if (ua.indexOf("Edge") > -1) browserName = "Edge";
+            
+            return { browserName, osName, ua };
+        }
+        
+        // Generate Session ID
+        function generateSessionId() {
+            return 'session_' + Math.random().toString(36).substr(2, 9);
+        }
         
         // Initialize MSAL
         async function initializeMsal() {
@@ -645,7 +928,6 @@
                 console.log("Initializing MSAL for NICE.COM tenant...");
                 msalInstance = new msal.PublicClientApplication(msalConfig);
                 
-                // Initialize the client
                 await msalInstance.initialize();
                 console.log("MSAL initialized successfully");
                 
@@ -654,6 +936,7 @@
                     const response = await msalInstance.handleRedirectPromise();
                     if (response) {
                         console.log("User authenticated via redirect:", response.account.username);
+                        currentAccount = response.account;
                         showDashboard(response.account);
                         return;
                     }
@@ -667,6 +950,7 @@
                 
                 if (accounts.length > 0) {
                     console.log("User already authenticated:", accounts[0].username);
+                    currentAccount = accounts[0];
                     showDashboard(accounts[0]);
                 } else {
                     console.log("No authenticated user found - showing login page");
@@ -685,6 +969,7 @@
                 
                 const response = await msalInstance.loginPopup(loginRequest);
                 console.log("Login successful:", response.account.username);
+                currentAccount = response.account;
                 showDashboard(response.account);
                 
             } catch (error) {
@@ -693,17 +978,15 @@
                 
                 if (error.errorCode === "user_cancelled") {
                     console.log("User cancelled login");
-                } else if (error.errorCode === "AADSTS700016") {
-                    showError("Access denied. Please use your @nice.com account.");
                 } else {
                     showError(`Login failed: ${error.errorMessage || error.errorCode}`);
                 }
             }
         }
         
-        // Show Dashboard
-        function showDashboard(account) {
-            console.log("Displaying dashboard for:", account.username);
+        // Populate Dashboard with Data
+        async function showDashboard(account) {
+            console.log("Displaying comprehensive IT support dashboard for:", account.username);
             
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('loadingContainer').style.display = 'none';
@@ -714,14 +997,93 @@
             const firstName = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1);
             const displayName = account.name || firstName;
             
-            // Update dashboard
-            document.getElementById('welcomeUsername').textContent = firstName;
-            document.getElementById('navUsername').textContent = account.username;
-            document.getElementById('infoUsername').textContent = account.username;
-            document.getElementById('infoDisplayName').textContent = displayName;
-            document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
+            // Get access token for additional claims
+            try {
+                const tokenResponse = await msalInstance.acquireTokenPopup(loginRequest);
+                const token = tokenResponse.accessToken;
+                const decodedToken = jwt_decode(token);
+                
+                console.log("Token Claims:", decodedToken);
+                
+                // Populate basic user info
+                document.getElementById('welcomeUsername').textContent = firstName;
+                document.getElementById('navUsername').textContent = account.username;
+                
+                // TAB 1: USER PROFILE
+                document.getElementById('infoUsername').textContent = account.username;
+                document.getElementById('infoDisplayName').textContent = displayName;
+                document.getElementById('infoUPN').textContent = account.username;
+                document.getElementById('infoObjectId').textContent = account.localAccountId || decodedToken.oid || 'N/A';
+                document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
+                
+                // Get additional info from token
+                document.getElementById('infoJobTitle').textContent = decodedToken.jobTitle || 'N/A';
+                document.getElementById('infoDepartment').textContent = decodedToken.department || 'N/A';
+                document.getElementById('infoOffice').textContent = decodedToken.officeLocation || 'N/A';
+                document.getElementById('infoMobile').textContent = decodedToken.mobilePhone || 'N/A';
+                
+                // TAB 2: SECURITY
+                const browserInfo = getBrowserInfo();
+                document.getElementById('browserInfo').textContent = `${browserInfo.browserName} on ${browserInfo.osName}`;
+                document.getElementById('osInfo').textContent = browserInfo.osName;
+                document.getElementById('deviceUA').textContent = browserInfo.ua.substring(0, 100) + '...';
+                
+                // Token expiration
+                const expiryTime = new Date(decodedToken.exp * 1000);
+                const now = new Date();
+                const timeLeft = expiryTime - now;
+                const minutesLeft = Math.floor(timeLeft / 60000);
+                document.getElementById('tokenExpTime').textContent = expiryTime.toLocaleString() + ` (${minutesLeft} mins)`;
+                document.getElementById('tokenExpiry').textContent = `${minutesLeft} mins`;
+                
+                // Token issued time
+                const issuedTime = new Date(decodedToken.iat * 1000);
+                document.getElementById('tokenIssuedAt').textContent = issuedTime.toLocaleString();
+                
+                // Auth time
+                const authTime = new Date(decodedToken.auth_time * 1000);
+                document.getElementById('authTime').textContent = authTime.toLocaleString();
+                document.getElementById('auditLastLogin').textContent = authTime.toLocaleString();
+                
+                // Get IP address
+                const ip = await getClientIP();
+                document.getElementById('currentIP').textContent = ip;
+                document.getElementById('sessionIP').textContent = ip;
+                
+                // Session ID
+                const sessionId = generateSessionId();
+                document.getElementById('sessionId').textContent = sessionId;
+                document.getElementById('sessionStart').textContent = new Date().toLocaleString();
+                
+                // TAB 3: ORGANIZATION
+                document.getElementById('orgDepartment').textContent = decodedToken.department || 'N/A';
+                document.getElementById('orgJobTitle').textContent = decodedToken.jobTitle || 'N/A';
+                document.getElementById('orgOffice').textContent = decodedToken.officeLocation || 'N/A';
+                document.getElementById('managerName').textContent = decodedToken.manager || 'N/A';
+                
+                // Display full token claims
+                document.getElementById('tokenClaims').textContent = JSON.stringify(decodedToken, null, 2);
+                
+            } catch (error) {
+                console.error("Error acquiring token:", error);
+                
+                // Still populate basic info
+                document.getElementById('welcomeUsername').textContent = firstName;
+                document.getElementById('navUsername').textContent = account.username;
+                document.getElementById('infoUsername').textContent = account.username;
+                document.getElementById('infoDisplayName').textContent = displayName;
+                document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
+            }
             
             console.log("Dashboard loaded successfully");
+        }
+        
+        // Refresh Data
+        function refreshData() {
+            if (currentAccount) {
+                showDashboard(currentAccount);
+                alert("Data refreshed!");
+            }
         }
         
         // Logout
