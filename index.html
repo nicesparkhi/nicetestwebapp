@@ -66,6 +66,15 @@
             font-size: 0.95em;
         }
         
+        .tenant-info {
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
         .sso-button-container {
             display: flex;
             flex-direction: column;
@@ -112,17 +121,6 @@
             font-weight: 500;
         }
         
-        .success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 4px solid #2e7d32;
-            margin-bottom: 20px;
-            display: none;
-            font-weight: 500;
-        }
-        
         .info-box {
             background: #e8f5e9;
             border: 1px solid #81c784;
@@ -142,14 +140,6 @@
         .info-box p {
             margin: 5px 0;
             line-height: 1.5;
-        }
-        
-        .info-box code {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
         }
         
         /* DASHBOARD STYLES */
@@ -430,8 +420,12 @@
                 <p>Sign in with your organization account</p>
             </div>
             
+            <div class="tenant-info">
+                🏢 <strong>NICE.COM Organization</strong><br>
+                Sign in with your @nice.com email address
+            </div>
+            
             <div class="error" id="errorMessage"></div>
-            <div class="success" id="successMessage"></div>
             
             <div class="sso-button-container">
                 <button class="sso-btn azure-btn" onclick="loginWithAzureAD()">
@@ -442,8 +436,8 @@
             <div class="info-box">
                 <strong>✅ Azure AD SSO - Active</strong>
                 <p><strong>Status:</strong> ✓ Fully Configured & Ready</p>
+                <p><strong>Organization:</strong> NICE.COM Tenant</p>
                 <p><strong>Authentication:</strong> Microsoft Entra ID (Azure AD)</p>
-                <p><strong>Flow:</strong> Authorization Code with PKCE</p>
             </div>
         </div>
     </div>
@@ -536,6 +530,10 @@
                 <h2 class="section-title">⚙️ SSO Configuration Status</h2>
                 <div class="info-grid">
                     <div class="info-item">
+                        <div class="info-label">Organization</div>
+                        <div class="info-value">NICE.COM Tenant</div>
+                    </div>
+                    <div class="info-item">
                         <div class="info-label">Auth Type</div>
                         <div class="info-value">Azure AD / Entra ID</div>
                     </div>
@@ -546,10 +544,6 @@
                     <div class="info-item">
                         <div class="info-label">Token Type</div>
                         <div class="info-value">JWT</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Hosting</div>
-                        <div class="info-value">Azure Static Web Apps</div>
                     </div>
                 </div>
             </div>
@@ -605,13 +599,13 @@
             
             <!-- Footer -->
             <div class="footer-section">
-                <p>🎉 Azure Static Web App with Azure AD SSO - Hosted & Secured | © 2026 All Rights Reserved</p>
+                <p>🎉 Azure Static Web App with Azure AD SSO - NICE.COM Tenant | © 2026 All Rights Reserved</p>
             </div>
         </div>
     </div>
     
     <script>
-        // MSAL Configuration with your Azure AD Credentials
+        // MSAL Configuration - NICE.COM Tenant Only
         const msalConfig = {
             auth: {
                 clientId: "338caa2b-ef86-4a5f-91b1-03f6b9847e1a",
@@ -648,18 +642,18 @@
         // Initialize MSAL
         async function initializeMsal() {
             try {
-                console.log("Initializing MSAL...");
+                console.log("Initializing MSAL for NICE.COM tenant...");
                 msalInstance = new msal.PublicClientApplication(msalConfig);
                 
                 // Initialize the client
                 await msalInstance.initialize();
                 console.log("MSAL initialized successfully");
                 
-                // Handle redirect promise first
+                // Handle redirect promise
                 try {
                     const response = await msalInstance.handleRedirectPromise();
                     if (response) {
-                        console.log("Redirect response received:", response);
+                        console.log("User authenticated via redirect:", response.account.username);
                         showDashboard(response.account);
                         return;
                     }
@@ -669,13 +663,13 @@
                 
                 // Check if already logged in
                 const accounts = msalInstance.getAllAccounts();
-                console.log("Number of accounts found:", accounts.length);
+                console.log("Accounts found:", accounts.length);
                 
                 if (accounts.length > 0) {
-                    console.log("User already logged in:", accounts[0].username);
+                    console.log("User already authenticated:", accounts[0].username);
                     showDashboard(accounts[0]);
                 } else {
-                    console.log("No user logged in, showing login page");
+                    console.log("No authenticated user found - showing login page");
                 }
             } catch (error) {
                 console.error("MSAL initialization error:", error);
@@ -683,32 +677,24 @@
             }
         }
         
-        // Login with Azure AD using Redirect Flow
+        // Login with Azure AD
         async function loginWithAzureAD() {
             try {
-                console.log("Starting login with redirect flow...");
+                console.log("Starting Azure AD login...");
                 document.getElementById('loadingContainer').style.display = 'flex';
                 
-                await msalInstance.loginPopup(loginRequest).catch(async (error) => {
-                    console.warn("Popup login failed, trying redirect flow:", error.errorCode);
-                    // Fallback to redirect flow
-                    await msalInstance.loginRedirect(loginRequest);
-                });
+                const response = await msalInstance.loginPopup(loginRequest);
+                console.log("Login successful:", response.account.username);
+                showDashboard(response.account);
+                
             } catch (error) {
                 console.error("Login error:", error);
                 document.getElementById('loadingContainer').style.display = 'none';
                 
-                // Handle specific error cases
                 if (error.errorCode === "user_cancelled") {
-                    console.log("User cancelled the login");
-                } else if (error.errorCode === "COOP_error") {
-                    console.log("COOP error detected, using redirect flow");
-                    try {
-                        await msalInstance.loginRedirect(loginRequest);
-                    } catch (redirectError) {
-                        console.error("Redirect login failed:", redirectError);
-                        showError("Login failed. Please try again.");
-                    }
+                    console.log("User cancelled login");
+                } else if (error.errorCode === "AADSTS700016") {
+                    showError("Access denied. Please use your @nice.com account.");
                 } else {
                     showError(`Login failed: ${error.errorMessage || error.errorCode}`);
                 }
@@ -717,7 +703,7 @@
         
         // Show Dashboard
         function showDashboard(account) {
-            console.log("Showing dashboard for:", account.username);
+            console.log("Displaying dashboard for:", account.username);
             
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('loadingContainer').style.display = 'none';
@@ -735,21 +721,15 @@
             document.getElementById('infoDisplayName').textContent = displayName;
             document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
             
-            console.log("Dashboard updated successfully");
+            console.log("Dashboard loaded successfully");
         }
         
         // Logout
         async function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 try {
-                    console.log("Logging out...");
-                    const accounts = msalInstance.getAllAccounts();
-                    if (accounts.length > 0) {
-                        await msalInstance.logoutPopup().catch(async (error) => {
-                            console.warn("Popup logout failed, trying redirect:", error);
-                            await msalInstance.logoutRedirect();
-                        });
-                    }
+                    console.log("Logging out user...");
+                    await msalInstance.logoutPopup();
                     
                     // Clear UI
                     document.getElementById('dashboardWrapper').style.display = 'none';
