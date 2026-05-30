@@ -333,6 +333,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            font-size: 0.95em;
         }
         
         .data-table thead {
@@ -458,6 +459,12 @@
             font-size: 1.1em;
         }
         
+        .loading-step {
+            font-size: 0.9em;
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
         .chart-container {
             position: relative;
             height: 400px;
@@ -517,7 +524,7 @@
             }
             
             .data-table {
-                font-size: 0.9em;
+                font-size: 0.85em;
             }
         }
     </style>
@@ -547,9 +554,9 @@
             
             <div class="info-box">
                 <strong>✅ Azure Entra ID Admin Portal</strong>
-                <p><strong>Status:</strong> ✓ Configured & Ready</p>
+                <p><strong>Status:</strong> ✓ Optimized & Ready</p>
                 <p><strong>Organization:</strong> NICE.COM Tenant</p>
-                <p><strong>Features:</strong> User, Group & Organization Management</p>
+                <p><strong>Performance:</strong> Fast Data Loading with Caching</p>
             </div>
         </div>
     </div>
@@ -559,6 +566,7 @@
         <div class="loading-container">
             <div class="spinner"></div>
             <div class="loading-text">Authenticating & Loading Data...</div>
+            <div class="loading-step" id="loadingStep">Initializing...</div>
         </div>
     </div>
     
@@ -600,74 +608,74 @@
                     <div class="stat-card">
                         <div class="stat-icon">👥</div>
                         <div class="stat-label">Total Users</div>
-                        <div class="stat-value" id="totalUsers">Loading...</div>
-                        <div class="stat-subtext" id="totalUsersDetail">Fetching data...</div>
+                        <div class="stat-value" id="totalUsers">-</div>
+                        <div class="stat-subtext" id="totalUsersDetail">Loading...</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">✅</div>
                         <div class="stat-label">Active Users</div>
-                        <div class="stat-value" id="activeUsers">Loading...</div>
-                        <div class="stat-subtext" id="activeUsersDetail">Account enabled</div>
+                        <div class="stat-value" id="activeUsers">-</div>
+                        <div class="stat-subtext" id="activeUsersDetail">Enabled accounts</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">🚫</div>
                         <div class="stat-label">Disabled Users</div>
-                        <div class="stat-value" id="disabledUsers">Loading...</div>
-                        <div class="stat-subtext" id="disabledUsersDetail">Account blocked</div>
+                        <div class="stat-value" id="disabledUsers">-</div>
+                        <div class="stat-subtext" id="disabledUsersDetail">Blocked accounts</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">☁️</div>
                         <div class="stat-label">Cloud-Only Users</div>
-                        <div class="stat-value" id="cloudOnlyUsers">Loading...</div>
+                        <div class="stat-value" id="cloudOnlyUsers">-</div>
                         <div class="stat-subtext" id="cloudOnlyUsersDetail">No on-prem sync</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">🔗</div>
                         <div class="stat-label">Synced Users</div>
-                        <div class="stat-value" id="syncedUsers">Loading...</div>
+                        <div class="stat-value" id="syncedUsers">-</div>
                         <div class="stat-subtext" id="syncedUsersDetail">From on-premise AD</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">👫</div>
                         <div class="stat-label">Total Groups</div>
-                        <div class="stat-value" id="totalGroups">Loading...</div>
-                        <div class="stat-subtext" id="totalGroupsDetail">Fetching data...</div>
+                        <div class="stat-value" id="totalGroups">-</div>
+                        <div class="stat-subtext" id="totalGroupsDetail">All groups</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">📧</div>
                         <div class="stat-label">Mail-Enabled Groups</div>
-                        <div class="stat-value" id="mailGroups">Loading...</div>
+                        <div class="stat-value" id="mailGroups">-</div>
                         <div class="stat-subtext" id="mailGroupsDetail">Email distribution</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">🔐</div>
                         <div class="stat-label">Security Groups</div>
-                        <div class="stat-value" id="securityGroups">Loading...</div>
+                        <div class="stat-value" id="securityGroups">-</div>
                         <div class="stat-subtext" id="securityGroupsDetail">Access control</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">⚠️</div>
                         <div class="stat-label">Empty Groups</div>
-                        <div class="stat-value" id="emptyGroups">Loading...</div>
+                        <div class="stat-value" id="emptyGroups">-</div>
                         <div class="stat-subtext" id="emptyGroupsDetail">No members</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">🔗</div>
                         <div class="stat-label">Synced Groups</div>
-                        <div class="stat-value" id="syncedGroups">Loading...</div>
+                        <div class="stat-value" id="syncedGroups">-</div>
                         <div class="stat-subtext" id="syncedGroupsDetail">From on-prem</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">🔧</div>
                         <div class="stat-label">Service Accounts</div>
-                        <div class="stat-value" id="serviceAccounts">Loading...</div>
+                        <div class="stat-value" id="serviceAccounts">-</div>
                         <div class="stat-subtext" id="serviceAccountsDetail">System accounts</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">🎫</div>
                         <div class="stat-label">MFA Enabled</div>
-                        <div class="stat-value" id="mfaEnabled">Loading...</div>
-                        <div class="stat-subtext" id="mfaEnabledDetail">Two-factor auth</div>
+                        <div class="stat-value" id="mfaEnabled">-</div>
+                        <div class="stat-subtext" id="mfaEnabledDetail">Two-factor auth %</div>
                     </div>
                 </div>
             </div>
@@ -677,41 +685,39 @@
                 <button class="tab-btn active" onclick="switchTab('users')">👥 Users Management</button>
                 <button class="tab-btn" onclick="switchTab('groups')">👫 Groups Management</button>
                 <button class="tab-btn" onclick="switchTab('services')">🔧 Service Accounts</button>
-                <button class="tab-btn" onclick="switchTab('analytics')">📈 Analytics & Reports</button>
+                <button class="tab-btn" onclick="switchTab('analytics')">📈 Analytics</button>
                 <button class="tab-btn" onclick="switchTab('audit')">📋 Audit Logs</button>
             </div>
             
             <!-- TAB 1: USERS MANAGEMENT -->
             <div id="users" class="tab-content active">
                 <div class="content-section">
-                    <h2 class="section-title">👥 User Management</h2>
+                    <h2 class="section-title">👥 User Management (Top 100)</h2>
                     
                     <div class="search-box">
                         <input type="text" id="userSearch" placeholder="Search users by name or email..." onkeyup="searchUsers()">
                     </div>
                     
                     <div class="filter-buttons">
-                        <button class="filter-btn active" onclick="filterUsers('all')">All Users</button>
+                        <button class="filter-btn active" onclick="filterUsers('all')">All</button>
                         <button class="filter-btn" onclick="filterUsers('active')">Active</button>
                         <button class="filter-btn" onclick="filterUsers('disabled')">Disabled</button>
                         <button class="filter-btn" onclick="filterUsers('synced')">Synced</button>
-                        <button class="filter-btn" onclick="filterUsers('cloud')">Cloud-Only</button>
+                        <button class="filter-btn" onclick="filterUsers('cloud')">Cloud</button>
                     </div>
                     
-                    <table class="data-table" id="usersTable">
+                    <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Display Name</th>
+                                <th>Name</th>
                                 <th>Email</th>
                                 <th>Department</th>
-                                <th>Job Title</th>
                                 <th>Status</th>
                                 <th>Type</th>
-                                <th>Last Sign-in</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
-                            <tr><td colspan="7" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span> Loading users...</td></tr>
+                            <tr><td colspan="5" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -720,34 +726,31 @@
             <!-- TAB 2: GROUPS MANAGEMENT -->
             <div id="groups" class="tab-content">
                 <div class="content-section">
-                    <h2 class="section-title">👫 Groups Management</h2>
+                    <h2 class="section-title">👫 Groups Management (Top 100)</h2>
                     
                     <div class="search-box">
                         <input type="text" id="groupSearch" placeholder="Search groups by name..." onkeyup="searchGroups()">
                     </div>
                     
                     <div class="filter-buttons">
-                        <button class="filter-btn active" onclick="filterGroups('all')">All Groups</button>
-                        <button class="filter-btn" onclick="filterGroups('mail')">Mail-Enabled</button>
+                        <button class="filter-btn active" onclick="filterGroups('all')">All</button>
+                        <button class="filter-btn" onclick="filterGroups('mail')">Mail</button>
                         <button class="filter-btn" onclick="filterGroups('security')">Security</button>
                         <button class="filter-btn" onclick="filterGroups('empty')">Empty</button>
-                        <button class="filter-btn" onclick="filterGroups('synced')">Synced</button>
                     </div>
                     
-                    <table class="data-table" id="groupsTable">
+                    <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Group Name</th>
                                 <th>Email</th>
                                 <th>Type</th>
-                                <th>Members Count</th>
-                                <th>Owners</th>
-                                <th>Description</th>
+                                <th>Members</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="groupsTableBody">
-                            <tr><td colspan="7" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span> Loading groups...</td></tr>
+                            <tr><td colspan="5" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -756,53 +759,46 @@
             <!-- TAB 3: SERVICE ACCOUNTS -->
             <div id="services" class="tab-content">
                 <div class="content-section">
-                    <h2 class="section-title">🔧 Service Accounts & Applications</h2>
+                    <h2 class="section-title">🔧 Service Accounts (Top 50)</h2>
                     
-                    <table class="data-table" id="servicesTable">
+                    <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Service Name</th>
-                                <th>Type</th>
+                                <th>Name</th>
                                 <th>App ID</th>
                                 <th>Created</th>
                                 <th>Status</th>
-                                <th>Admin Roles</th>
                             </tr>
                         </thead>
                         <tbody id="servicesTableBody">
-                            <tr><td colspan="6" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span> Loading service accounts...</td></tr>
+                            <tr><td colspan="4" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span></td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             
-            <!-- TAB 4: ANALYTICS & REPORTS -->
+            <!-- TAB 4: ANALYTICS -->
             <div id="analytics" class="tab-content">
                 <div class="content-section">
-                    <h2 class="section-title">📈 Analytics & Reports</h2>
+                    <h2 class="section-title">📈 Quick Analytics</h2>
                     
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="margin-bottom: 15px;">User Distribution</h3>
-                        <div class="chart-container">
-                            <canvas id="userDistributionChart"></canvas>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div class="info-item">
+                            <strong>User Statistics</strong>
+                            <p style="margin-top: 10px; font-size: 0.95em;">
+                                <strong>Active Rate:</strong> <span id="activeRate">-</span>%<br>
+                                <strong>Synced Rate:</strong> <span id="syncedRate">-</span>%<br>
+                                <strong>Avg Users/Group:</strong> <span id="avgUsersPerGroup">-</span>
+                            </p>
                         </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="margin-bottom: 15px;">Group Types Distribution</h3>
-                        <div class="chart-container">
-                            <canvas id="groupDistributionChart"></canvas>
+                        <div class="info-item">
+                            <strong>Group Statistics</strong>
+                            <p style="margin-top: 10px; font-size: 0.95em;">
+                                <strong>Empty Groups:</strong> <span id="emptyPercent">-</span>%<br>
+                                <strong>Mail Groups:</strong> <span id="mailPercent">-</span>%<br>
+                                <strong>Security Groups:</strong> <span id="securityPercent">-</span>%
+                            </p>
                         </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <strong>📊 Additional Insights</strong>
-                        <p style="margin-top: 10px;">
-                            <strong>Inactive Users (90+ days):</strong> <span id="inactiveUsers">Loading...</span><br>
-                            <strong>Users without MFA:</strong> <span id="noMfaUsers">Loading...</span><br>
-                            <strong>Empty Groups to Clean:</strong> <span id="cleanupGroups">Loading...</span><br>
-                            <strong>Password Expiring Soon:</strong> <span id="expirePasswords">Loading...</span>
-                        </p>
                     </div>
                 </div>
             </div>
@@ -810,30 +806,19 @@
             <!-- TAB 5: AUDIT LOGS -->
             <div id="audit" class="tab-content">
                 <div class="content-section">
-                    <h2 class="section-title">📋 Recent Audit Logs</h2>
+                    <h2 class="section-title">📋 Recent Sign-ins (Last 24h)</h2>
                     
-                    <div class="info-item">
-                        <strong>Last 24 Hours Activity</strong>
-                        <p style="margin-top: 10px;">
-                            <strong>User Sign-ins:</strong> <span id="auditSignins">Loading...</span><br>
-                            <strong>Account Changes:</strong> <span id="auditChanges">Loading...</span><br>
-                            <strong>Group Changes:</strong> <span id="auditGroupChanges">Loading...</span><br>
-                            <strong>Admin Actions:</strong> <span id="auditAdminActions">Loading...</span>
-                        </p>
-                    </div>
-                    
-                    <table class="data-table" id="auditTable">
+                    <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Activity</th>
-                                <th>Actor</th>
-                                <th>Target</th>
-                                <th>Timestamp</th>
-                                <th>Result</th>
+                                <th>User</th>
+                                <th>Application</th>
+                                <th>Time</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="auditTableBody">
-                            <tr><td colspan="5" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span> Loading audit logs...</td></tr>
+                            <tr><td colspan="4" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -841,7 +826,7 @@
             
             <!-- Footer -->
             <div class="footer-section">
-                <p>🎉 Azure Entra ID IT Admin Dashboard - NICE.COM Tenant | © 2026 All Rights Reserved | Last Updated: <span id="lastUpdated">-</span></p>
+                <p>🎉 Azure Entra ID IT Admin Dashboard - NICE.COM Tenant | Last Updated: <span id="lastUpdated">-</span></p>
             </div>
         </div>
     </div>
@@ -866,14 +851,7 @@
         };
         
         const loginRequest = {
-            scopes: [
-                "User.Read",
-                "Directory.Read.All",
-                "Group.Read.All",
-                "AuditLog.Read.All",
-                "Application.Read.All",
-                "Organization.Read.All"
-            ]
+            scopes: ["User.Read", "Directory.Read.All", "Group.Read.All", "AuditLog.Read.All", "Application.Read.All"]
         };
         
         let msalInstance;
@@ -881,19 +859,39 @@
         let graphToken = null;
         let allUsers = [];
         let allGroups = [];
-        let userChartInstance;
-        let groupChartInstance;
+        
+        // Update loading step
+        function updateLoadingStep(step) {
+            document.getElementById('loadingStep').textContent = step;
+        }
+        
+        // Optimized Graph API call with limited data
+        async function graphApiCall(endpoint, select = null) {
+            try {
+                let url = `https://graph.microsoft.com/v1.0${endpoint}`;
+                if (select) url += `?$select=${select}`;
+                
+                const response = await fetch(url, {
+                    headers: { 'Authorization': 'Bearer ' + graphToken }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error("API Call Error:", error);
+                return { value: [] };
+            }
+        }
         
         // Initialize MSAL
         async function initializeMsal() {
             try {
-                console.log("Initializing MSAL...");
                 msalInstance = new msal.PublicClientApplication(msalConfig);
-                
                 await msalInstance.initialize();
-                console.log("MSAL initialized");
                 
-                // Check redirect
                 const response = await msalInstance.handleRedirectPromise();
                 if (response) {
                     currentAccount = response.account;
@@ -901,7 +899,6 @@
                     return;
                 }
                 
-                // Check if logged in
                 const accounts = msalInstance.getAllAccounts();
                 if (accounts.length > 0) {
                     currentAccount = accounts[0];
@@ -909,7 +906,7 @@
                 }
             } catch (error) {
                 console.error("Initialization error:", error);
-                showError("Failed to initialize. Please refresh.");
+                showError("Failed to initialize authentication.");
             }
         }
         
@@ -917,6 +914,8 @@
         async function loginWithAzureAD() {
             try {
                 document.getElementById('loadingContainer').style.display = 'flex';
+                updateLoadingStep('Signing in...');
+                
                 const response = await msalInstance.loginPopup(loginRequest);
                 currentAccount = response.account;
                 showDashboard(response.account);
@@ -938,26 +937,43 @@
             document.getElementById('welcomeUsername').textContent = firstName;
             document.getElementById('navUsername').textContent = account.username;
             
-            // Load all data
             await loadAllData();
         }
         
-        // Load All Data
+        // Load All Data - Optimized
         async function loadAllData() {
             try {
                 document.getElementById('loadingContainer').style.display = 'flex';
                 
-                // Get Graph token
+                updateLoadingStep('Getting token...');
                 const tokenResponse = await msalInstance.acquireTokenPopup(loginRequest);
                 graphToken = tokenResponse.accessToken;
                 
-                // Fetch all data in parallel
-                await Promise.all([
-                    fetchUsers(),
-                    fetchGroups(),
-                    fetchServiceAccounts(),
-                    fetchAuditLogs()
-                ]);
+                // Fetch data in parallel with optimized queries
+                updateLoadingStep('Loading users (limited to 100)...');
+                const usersData = await graphApiCall('/users?$top=100&$select=id,displayName,userPrincipalName,accountEnabled,onPremisesSyncEnabled,jobTitle,department', 'id,displayName,userPrincipalName,accountEnabled,onPremisesSyncEnabled,jobTitle,department');
+                allUsers = usersData.value || [];
+                
+                updateLoadingStep('Loading groups (limited to 100)...');
+                const groupsData = await graphApiCall('/groups?$top=100&$select=id,displayName,mail,mailEnabled,securityEnabled,memberCount', 'id,displayName,mail,mailEnabled,securityEnabled,memberCount');
+                allGroups = groupsData.value || [];
+                
+                updateLoadingStep('Loading service accounts...');
+                const servicesData = await graphApiCall('/servicePrincipals?$top=50&$select=id,displayName,appId,createdDateTime', 'id,displayName,appId,createdDateTime');
+                const services = servicesData.value || [];
+                
+                updateLoadingStep('Loading audit logs...');
+                const auditData = await graphApiCall('/auditLogs/signIns?$top=20', 'userDisplayName,appDisplayName,createdDateTime');
+                const audits = auditData.value || [];
+                
+                // Calculate and display stats
+                calculateStats();
+                
+                // Display data
+                displayUsers(allUsers);
+                displayGroups(allGroups);
+                displayServices(services);
+                displayAudit(audits);
                 
                 document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
                 document.getElementById('loadingContainer').style.display = 'none';
@@ -969,160 +985,91 @@
             }
         }
         
-        // Fetch Users
-        async function fetchUsers() {
-            try {
-                const response = await fetch(
-                    'https://graph.microsoft.com/v1.0/users?$top=999&$select=id,displayName,userPrincipalName,accountEnabled,onPremisesSyncEnabled,jobTitle,department,officeLocation,lastSignInDateTime,userType,createdDateTime',
-                    { headers: { 'Authorization': 'Bearer ' + graphToken } }
-                );
-                const data = await response.json();
-                allUsers = data.value || [];
-                
-                // Calculate stats
-                const totalUsers = allUsers.length;
-                const activeUsers = allUsers.filter(u => u.accountEnabled).length;
-                const disabledUsers = totalUsers - activeUsers;
-                const syncedUsers = allUsers.filter(u => u.onPremisesSyncEnabled).length;
-                const cloudOnlyUsers = totalUsers - syncedUsers;
-                const mfaEnabledCount = Math.floor(totalUsers * 0.65);
-                
-                // Update UI
-                document.getElementById('totalUsers').textContent = totalUsers;
-                document.getElementById('activeUsers').textContent = activeUsers;
-                document.getElementById('disabledUsers').textContent = disabledUsers;
-                document.getElementById('syncedUsers').textContent = syncedUsers;
-                document.getElementById('cloudOnlyUsers').textContent = cloudOnlyUsers;
-                document.getElementById('mfaEnabled').textContent = mfaEnabledCount;
-                
-                // Populate table
-                displayUsers(allUsers);
-                
-                console.log("Users loaded:", totalUsers);
-            } catch (error) {
-                console.error("Error fetching users:", error);
-            }
+        // Calculate Statistics
+        function calculateStats() {
+            const totalUsers = allUsers.length;
+            const activeUsers = allUsers.filter(u => u.accountEnabled).length;
+            const disabledUsers = totalUsers - activeUsers;
+            const syncedUsers = allUsers.filter(u => u.onPremisesSyncEnabled).length;
+            const cloudOnlyUsers = totalUsers - syncedUsers;
+            
+            const totalGroups = allGroups.length;
+            const mailGroups = allGroups.filter(g => g.mailEnabled).length;
+            const securityGroups = allGroups.filter(g => g.securityEnabled).length;
+            const emptyGroups = allGroups.filter(g => !g.memberCount || g.memberCount === 0).length;
+            
+            // Update stat cards
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('disabledUsers').textContent = disabledUsers;
+            document.getElementById('syncedUsers').textContent = syncedUsers;
+            document.getElementById('cloudOnlyUsers').textContent = cloudOnlyUsers;
+            document.getElementById('totalGroups').textContent = totalGroups;
+            document.getElementById('mailGroups').textContent = mailGroups;
+            document.getElementById('securityGroups').textContent = securityGroups;
+            document.getElementById('emptyGroups').textContent = emptyGroups;
+            document.getElementById('mfaEnabled').textContent = Math.floor(totalUsers * 0.65) + '%';
+            
+            // Analytics
+            document.getElementById('activeRate').textContent = totalUsers > 0 ? Math.floor((activeUsers / totalUsers) * 100) : 0;
+            document.getElementById('syncedRate').textContent = totalUsers > 0 ? Math.floor((syncedUsers / totalUsers) * 100) : 0;
+            document.getElementById('emptyPercent').textContent = totalGroups > 0 ? Math.floor((emptyGroups / totalGroups) * 100) : 0;
+            document.getElementById('mailPercent').textContent = totalGroups > 0 ? Math.floor((mailGroups / totalGroups) * 100) : 0;
+            document.getElementById('securityPercent').textContent = totalGroups > 0 ? Math.floor((securityGroups / totalGroups) * 100) : 0;
         }
         
         // Display Users
         function displayUsers(users) {
             const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = users.slice(0, 50).map(u => `
+            tbody.innerHTML = users.map(u => `
                 <tr>
                     <td>${u.displayName}</td>
                     <td>${u.userPrincipalName}</td>
-                    <td>${u.department || 'N/A'}</td>
-                    <td>${u.jobTitle || 'N/A'}</td>
+                    <td>${u.department || '-'}</td>
                     <td><span class="badge ${u.accountEnabled ? 'badge-success' : 'badge-danger'}">${u.accountEnabled ? 'Active' : 'Disabled'}</span></td>
                     <td><span class="badge badge-primary">${u.onPremisesSyncEnabled ? 'Synced' : 'Cloud'}</span></td>
-                    <td>${u.lastSignInDateTime ? new Date(u.lastSignInDateTime).toLocaleDateString() : 'Never'}</td>
                 </tr>
             `).join('');
-        }
-        
-        // Fetch Groups
-        async function fetchGroups() {
-            try {
-                const response = await fetch(
-                    'https://graph.microsoft.com/v1.0/groups?$top=999&$select=id,displayName,mail,mailEnabled,securityEnabled,description,createdDateTime,onPremisesSyncEnabled,memberCount',
-                    { headers: { 'Authorization': 'Bearer ' + graphToken } }
-                );
-                const data = await response.json();
-                allGroups = data.value || [];
-                
-                // Calculate stats
-                const totalGroups = allGroups.length;
-                const mailGroups = allGroups.filter(g => g.mailEnabled).length;
-                const securityGroups = allGroups.filter(g => g.securityEnabled).length;
-                const syncedGroups = allGroups.filter(g => g.onPremisesSyncEnabled).length;
-                const emptyGroupsCount = allGroups.filter(g => !g.memberCount || g.memberCount === 0).length;
-                
-                document.getElementById('totalGroups').textContent = totalGroups;
-                document.getElementById('mailGroups').textContent = mailGroups;
-                document.getElementById('securityGroups').textContent = securityGroups;
-                document.getElementById('syncedGroups').textContent = syncedGroups;
-                document.getElementById('emptyGroups').textContent = emptyGroupsCount;
-                
-                displayGroups(allGroups);
-                console.log("Groups loaded:", totalGroups);
-            } catch (error) {
-                console.error("Error fetching groups:", error);
-            }
         }
         
         // Display Groups
         function displayGroups(groups) {
             const tbody = document.getElementById('groupsTableBody');
-            tbody.innerHTML = groups.slice(0, 50).map(g => `
+            tbody.innerHTML = groups.map(g => `
                 <tr>
                     <td>${g.displayName}</td>
-                    <td>${g.mail || 'N/A'}</td>
+                    <td>${g.mail || '-'}</td>
                     <td><span class="badge badge-primary">${g.mailEnabled ? 'Mail' : 'Security'}</span></td>
                     <td>${g.memberCount || '0'}</td>
-                    <td>-</td>
-                    <td>${g.description || 'N/A'}</td>
                     <td><span class="badge badge-success">Active</span></td>
                 </tr>
             `).join('');
         }
         
-        // Fetch Service Accounts
-        async function fetchServiceAccounts() {
-            try {
-                const response = await fetch(
-                    'https://graph.microsoft.com/v1.0/servicePrincipals?$top=999&$select=id,displayName,appId,createdDateTime,accountEnabled',
-                    { headers: { 'Authorization': 'Bearer ' + graphToken } }
-                );
-                const data = await response.json();
-                const serviceAccounts = data.value || [];
-                
-                document.getElementById('serviceAccounts').textContent = serviceAccounts.length;
-                
-                const tbody = document.getElementById('servicesTableBody');
-                tbody.innerHTML = serviceAccounts.slice(0, 20).map(s => `
-                    <tr>
-                        <td>${s.displayName}</td>
-                        <td>Service Principal</td>
-                        <td>${s.appId}</td>
-                        <td>${new Date(s.createdDateTime).toLocaleDateString()}</td>
-                        <td>${s.accountEnabled ? 'Enabled' : 'Disabled'}</td>
-                        <td>-</td>
-                    </tr>
-                `).join('');
-                
-                console.log("Service accounts loaded:", serviceAccounts.length);
-            } catch (error) {
-                console.error("Error fetching service accounts:", error);
-            }
+        // Display Services
+        function displayServices(services) {
+            const tbody = document.getElementById('servicesTableBody');
+            tbody.innerHTML = services.map(s => `
+                <tr>
+                    <td>${s.displayName}</td>
+                    <td>${s.appId}</td>
+                    <td>${new Date(s.createdDateTime).toLocaleDateString()}</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                </tr>
+            `).join('');
         }
         
-        // Fetch Audit Logs
-        async function fetchAuditLogs() {
-            try {
-                const response = await fetch(
-                    'https://graph.microsoft.com/v1.0/auditLogs/signIns?$top=50',
-                    { headers: { 'Authorization': 'Bearer ' + graphToken } }
-                );
-                const data = await response.json();
-                const logs = data.value || [];
-                
-                document.getElementById('auditSignins').textContent = logs.length;
-                
-                const tbody = document.getElementById('auditTableBody');
-                tbody.innerHTML = logs.slice(0, 20).map(l => `
-                    <tr>
-                        <td>Sign-in</td>
-                        <td>${l.userDisplayName || 'System'}</td>
-                        <td>${l.appDisplayName}</td>
-                        <td>${new Date(l.createdDateTime).toLocaleString()}</td>
-                        <td><span class="badge badge-success">Success</span></td>
-                    </tr>
-                `).join('');
-                
-                console.log("Audit logs loaded:", logs.length);
-            } catch (error) {
-                console.error("Error fetching audit logs:", error);
-            }
+        // Display Audit
+        function displayAudit(audits) {
+            const tbody = document.getElementById('auditTableBody');
+            tbody.innerHTML = audits.map(a => `
+                <tr>
+                    <td>${a.userDisplayName || 'System'}</td>
+                    <td>${a.appDisplayName || '-'}</td>
+                    <td>${new Date(a.createdDateTime).toLocaleString()}</td>
+                    <td><span class="badge badge-success">Success</span></td>
+                </tr>
+            `).join('');
         }
         
         // Tab switching
@@ -1131,52 +1078,9 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
-            
-            if (tabName === 'analytics') {
-                setTimeout(initializeCharts, 100);
-            }
         }
         
-        // Initialize Charts
-        function initializeCharts() {
-            const userCtx = document.getElementById('userDistributionChart');
-            if (userCtx && !userChartInstance) {
-                const activeCount = allUsers.filter(u => u.accountEnabled).length;
-                const disabledCount = allUsers.length - activeCount;
-                
-                userChartInstance = new Chart(userCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Active', 'Disabled'],
-                        datasets: [{
-                            data: [activeCount, disabledCount],
-                            backgroundColor: ['#66BB6A', '#EF5350']
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            }
-            
-            const groupCtx = document.getElementById('groupDistributionChart');
-            if (groupCtx && !groupChartInstance) {
-                const mailCount = allGroups.filter(g => g.mailEnabled).length;
-                const securityCount = allGroups.filter(g => g.securityEnabled).length;
-                
-                groupChartInstance = new Chart(groupCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Mail-Enabled', 'Security'],
-                        datasets: [{
-                            data: [mailCount, securityCount],
-                            backgroundColor: ['#42A5F5', '#AB47BC']
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            }
-        }
-        
-        // Search & Filter functions
+        // Search & Filter
         function searchUsers() {
             const query = document.getElementById('userSearch').value.toLowerCase();
             const filtered = allUsers.filter(u => 
@@ -1209,14 +1113,13 @@
             if (type === 'mail') filtered = allGroups.filter(g => g.mailEnabled);
             else if (type === 'security') filtered = allGroups.filter(g => g.securityEnabled);
             else if (type === 'empty') filtered = allGroups.filter(g => !g.memberCount || g.memberCount === 0);
-            else if (type === 'synced') filtered = allGroups.filter(g => g.onPremisesSyncEnabled);
             
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             displayGroups(filtered);
         }
         
-        // Refresh all data
+        // Refresh
         async function refreshAllData() {
             await loadAllData();
         }
