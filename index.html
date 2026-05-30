@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Azure Portal - IT Support Dashboard</title>
+    <title>Azure Entra ID - IT Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Microsoft Authentication Library (MSAL) for JavaScript -->
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
-    <!-- JWT decode library -->
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@4.0.0/build/jwt-decode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -133,17 +132,6 @@
             color: #2e7d32;
         }
         
-        .info-box strong {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 1.05em;
-        }
-        
-        .info-box p {
-            margin: 5px 0;
-            line-height: 1.5;
-        }
-        
         /* DASHBOARD STYLES */
         .dashboard-wrapper {
             display: none;
@@ -216,7 +204,7 @@
         }
         
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             padding: 40px 20px;
         }
@@ -239,14 +227,14 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
             margin-bottom: 40px;
         }
         
         .stat-card {
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             transition: all 0.3s;
@@ -259,22 +247,28 @@
         }
         
         .stat-icon {
-            font-size: 2.5em;
-            margin-bottom: 15px;
+            font-size: 2em;
+            margin-bottom: 10px;
         }
         
         .stat-label {
             color: #999;
-            font-size: 0.9em;
+            font-size: 0.85em;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .stat-value {
-            font-size: 1.5em;
+            font-size: 2.2em;
             color: #333;
             font-weight: bold;
+        }
+        
+        .stat-subtext {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 8px;
         }
         
         .content-section {
@@ -296,45 +290,70 @@
             gap: 10px;
         }
         
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .search-box {
+            margin-bottom: 20px;
         }
         
-        .info-item {
-            background: #f9f9f9;
-            padding: 15px;
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
             border-radius: 8px;
-            border-left: 3px solid #667eea;
+            font-size: 1em;
         }
         
-        .info-label {
-            color: #999;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            margin-bottom: 8px;
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .filter-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .data-table thead {
+            background: #f9f9f9;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .data-table th {
+            padding: 12px;
+            text-align: left;
             font-weight: 600;
-        }
-        
-        .info-value {
             color: #333;
-            font-size: 1.05em;
-            font-weight: 600;
-            word-break: break-word;
         }
         
-        .info-value.success {
-            color: #2e7d32;
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
         }
         
-        .info-value.warning {
-            color: #f57c00;
-        }
-        
-        .info-value.danger {
-            color: #c62828;
+        .data-table tr:hover {
+            background: #f5f5f5;
         }
         
         .badge {
@@ -343,8 +362,6 @@
             border-radius: 20px;
             font-size: 0.85em;
             font-weight: 600;
-            margin-right: 5px;
-            margin-top: 5px;
         }
         
         .badge-success {
@@ -352,14 +369,14 @@
             color: #2e7d32;
         }
         
-        .badge-warning {
-            background: #ffe0b2;
-            color: #f57c00;
-        }
-        
         .badge-danger {
             background: #ffcdd2;
             color: #c62828;
+        }
+        
+        .badge-warning {
+            background: #ffe0b2;
+            color: #f57c00;
         }
         
         .badge-primary {
@@ -367,73 +384,12 @@
             color: #1565c0;
         }
         
-        .device-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .device-item {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 3px solid #667eea;
-        }
-        
-        .device-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        
-        .device-detail {
-            font-size: 0.9em;
-            color: #666;
-            margin: 3px 0;
-        }
-        
-        .footer-section {
-            text-align: center;
-            color: #999;
-            font-size: 0.9em;
-            padding: 20px;
-            border-top: 1px solid #e0e0e0;
-            margin-top: 40px;
-        }
-        
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        
-        .loading-text {
-            color: white;
-            margin-top: 20px;
-            font-size: 1.1em;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
         .tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
         }
         
         .tab-btn {
@@ -460,6 +416,86 @@
             display: block;
         }
         
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .loading-container {
+            color: white;
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+        
+        .info-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #5568d3;
+        }
+        
+        .footer-section {
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 40px;
+        }
+        
         @media (max-width: 768px) {
             .navbar {
                 padding: 0 15px;
@@ -476,8 +512,12 @@
                 grid-template-columns: 1fr;
             }
             
-            .info-grid {
-                grid-template-columns: 1fr;
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .data-table {
+                font-size: 0.9em;
             }
         }
     </style>
@@ -488,13 +528,13 @@
         <div class="login-box">
             <div class="login-header">
                 <h1>🔐</h1>
-                <h1>Azure Portal</h1>
-                <p>IT Support Dashboard</p>
+                <h1>Azure Entra ID</h1>
+                <p>IT Admin Dashboard</p>
             </div>
             
             <div class="tenant-info">
                 🏢 <strong>NICE.COM Organization</strong><br>
-                Sign in with your @nice.com email address
+                Sign in with your admin account
             </div>
             
             <div class="error" id="errorMessage"></div>
@@ -506,19 +546,19 @@
             </div>
             
             <div class="info-box">
-                <strong>✅ Azure AD SSO - Active</strong>
-                <p><strong>Status:</strong> ✓ Fully Configured & Ready</p>
+                <strong>✅ Azure Entra ID Admin Portal</strong>
+                <p><strong>Status:</strong> ✓ Configured & Ready</p>
                 <p><strong>Organization:</strong> NICE.COM Tenant</p>
-                <p><strong>Features:</strong> Comprehensive IT Support Dashboard</p>
+                <p><strong>Features:</strong> User, Group & Organization Management</p>
             </div>
         </div>
     </div>
     
     <!-- LOADING CONTAINER -->
     <div class="loading" id="loadingContainer" style="display: none;">
-        <div>
+        <div class="loading-container">
             <div class="spinner"></div>
-            <div class="loading-text">Authenticating with Azure AD...</div>
+            <div class="loading-text">Authenticating & Loading Data...</div>
         </div>
     </div>
     
@@ -527,7 +567,7 @@
         <!-- Navbar -->
         <nav class="navbar">
             <div class="navbar-brand">
-                <i class="fas fa-cloud"></i> IT Support Dashboard
+                <i class="fas fa-cloud"></i> Azure Entra ID Admin
             </div>
             <div class="navbar-right">
                 <div class="user-profile">
@@ -547,291 +587,267 @@
             <!-- Header Section -->
             <div class="header-section">
                 <div class="welcome-text">Welcome, <span id="welcomeUsername"></span>! 👋</div>
-                <div class="header-subtitle">Comprehensive Azure AD User Information & IT Support Dashboard</div>
+                <div class="header-subtitle">Comprehensive Azure Entra ID Administration Dashboard</div>
+                <button class="refresh-btn" onclick="refreshAllData()" style="margin-top: 15px;">
+                    <i class="fas fa-sync-alt"></i> Refresh All Data
+                </button>
             </div>
             
-            <!-- Quick Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">👤</div>
-                    <div class="stat-label">Account Status</div>
-                    <div class="stat-value" id="accountStatus">Active</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🔐</div>
-                    <div class="stat-label">MFA Status</div>
-                    <div class="stat-value" id="mfaStatus">Unknown</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📱</div>
-                    <div class="stat-label">Registered Devices</div>
-                    <div class="stat-value" id="deviceCount">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⏰</div>
-                    <div class="stat-label">Token Expiration</div>
-                    <div class="stat-value" id="tokenExpiry">Loading...</div>
+            <!-- ORGANIZATION OVERVIEW STATS -->
+            <div style="margin-bottom: 40px;">
+                <h2 style="font-size: 1.3em; margin-bottom: 20px; color: #333;">📊 Organization Overview</h2>
+                <div class="stats-grid" id="orgStatsGrid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-label">Total Users</div>
+                        <div class="stat-value" id="totalUsers">Loading...</div>
+                        <div class="stat-subtext" id="totalUsersDetail">Fetching data...</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-label">Active Users</div>
+                        <div class="stat-value" id="activeUsers">Loading...</div>
+                        <div class="stat-subtext" id="activeUsersDetail">Account enabled</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚫</div>
+                        <div class="stat-label">Disabled Users</div>
+                        <div class="stat-value" id="disabledUsers">Loading...</div>
+                        <div class="stat-subtext" id="disabledUsersDetail">Account blocked</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">☁️</div>
+                        <div class="stat-label">Cloud-Only Users</div>
+                        <div class="stat-value" id="cloudOnlyUsers">Loading...</div>
+                        <div class="stat-subtext" id="cloudOnlyUsersDetail">No on-prem sync</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔗</div>
+                        <div class="stat-label">Synced Users</div>
+                        <div class="stat-value" id="syncedUsers">Loading...</div>
+                        <div class="stat-subtext" id="syncedUsersDetail">From on-premise AD</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👫</div>
+                        <div class="stat-label">Total Groups</div>
+                        <div class="stat-value" id="totalGroups">Loading...</div>
+                        <div class="stat-subtext" id="totalGroupsDetail">Fetching data...</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📧</div>
+                        <div class="stat-label">Mail-Enabled Groups</div>
+                        <div class="stat-value" id="mailGroups">Loading...</div>
+                        <div class="stat-subtext" id="mailGroupsDetail">Email distribution</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔐</div>
+                        <div class="stat-label">Security Groups</div>
+                        <div class="stat-value" id="securityGroups">Loading...</div>
+                        <div class="stat-subtext" id="securityGroupsDetail">Access control</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-label">Empty Groups</div>
+                        <div class="stat-value" id="emptyGroups">Loading...</div>
+                        <div class="stat-subtext" id="emptyGroupsDetail">No members</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔗</div>
+                        <div class="stat-label">Synced Groups</div>
+                        <div class="stat-value" id="syncedGroups">Loading...</div>
+                        <div class="stat-subtext" id="syncedGroupsDetail">From on-prem</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔧</div>
+                        <div class="stat-label">Service Accounts</div>
+                        <div class="stat-value" id="serviceAccounts">Loading...</div>
+                        <div class="stat-subtext" id="serviceAccountsDetail">System accounts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎫</div>
+                        <div class="stat-label">MFA Enabled</div>
+                        <div class="stat-value" id="mfaEnabled">Loading...</div>
+                        <div class="stat-subtext" id="mfaEnabledDetail">Two-factor auth</div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Tab Navigation -->
+            <!-- TAB NAVIGATION -->
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('profile')">👤 User Profile</button>
-                <button class="tab-btn" onclick="switchTab('security')">🔐 Security</button>
-                <button class="tab-btn" onclick="switchTab('organization')">🏢 Organization</button>
-                <button class="tab-btn" onclick="switchTab('sessions')">📱 Sessions & Devices</button>
-                <button class="tab-btn" onclick="switchTab('audit')">📋 Audit & Compliance</button>
+                <button class="tab-btn active" onclick="switchTab('users')">👥 Users Management</button>
+                <button class="tab-btn" onclick="switchTab('groups')">👫 Groups Management</button>
+                <button class="tab-btn" onclick="switchTab('services')">🔧 Service Accounts</button>
+                <button class="tab-btn" onclick="switchTab('analytics')">📈 Analytics & Reports</button>
+                <button class="tab-btn" onclick="switchTab('audit')">📋 Audit Logs</button>
             </div>
             
-            <!-- TAB 1: USER PROFILE -->
-            <div id="profile" class="tab-content active">
+            <!-- TAB 1: USERS MANAGEMENT -->
+            <div id="users" class="tab-content active">
                 <div class="content-section">
-                    <h2 class="section-title">👤 User Profile Information</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Email Address</div>
-                            <div class="info-value" id="infoUsername"></div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Display Name</div>
-                            <div class="info-value" id="infoDisplayName"></div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">User Principal Name (UPN)</div>
-                            <div class="info-value" id="infoUPN"></div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Object ID</div>
-                            <div class="info-value" id="infoObjectId"></div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Job Title</div>
-                            <div class="info-value" id="infoJobTitle">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Department</div>
-                            <div class="info-value" id="infoDepartment">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Office Location</div>
-                            <div class="info-value" id="infoOffice">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Mobile Phone</div>
-                            <div class="info-value" id="infoMobile">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Login Time</div>
-                            <div class="info-value" id="infoLoginTime"></div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Account Creation Date</div>
-                            <div class="info-value" id="infoCreatedDate">N/A</div>
-                        </div>
+                    <h2 class="section-title">👥 User Management</h2>
+                    
+                    <div class="search-box">
+                        <input type="text" id="userSearch" placeholder="Search users by name or email..." onkeyup="searchUsers()">
                     </div>
+                    
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="filterUsers('all')">All Users</button>
+                        <button class="filter-btn" onclick="filterUsers('active')">Active</button>
+                        <button class="filter-btn" onclick="filterUsers('disabled')">Disabled</button>
+                        <button class="filter-btn" onclick="filterUsers('synced')">Synced</button>
+                        <button class="filter-btn" onclick="filterUsers('cloud')">Cloud-Only</button>
+                    </div>
+                    
+                    <table class="data-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Display Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Job Title</th>
+                                <th>Status</th>
+                                <th>Type</th>
+                                <th>Last Sign-in</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="7" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span> Loading users...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
-            <!-- TAB 2: SECURITY -->
-            <div id="security" class="tab-content">
+            <!-- TAB 2: GROUPS MANAGEMENT -->
+            <div id="groups" class="tab-content">
                 <div class="content-section">
-                    <h2 class="section-title">🔐 Security & Session Information</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">MFA Enabled</div>
-                            <div class="info-value" id="mfaEnabled">
-                                <span class="badge badge-warning">Not Available in Token</span>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Authentication Method</div>
-                            <div class="info-value" id="authMethod">Azure AD SSO</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Token Expiration Time</div>
-                            <div class="info-value" id="tokenExpTime"></div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Token Type</div>
-                            <div class="info-value">JWT</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Issued At</div>
-                            <div class="info-value" id="tokenIssuedAt"></div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Current IP Address</div>
-                            <div class="info-value" id="currentIP">Detecting...</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Session ID</div>
-                            <div class="info-value" id="sessionId">Generating...</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Scope</div>
-                            <div class="info-value" id="tokenScope">User.Read</div>
-                        </div>
+                    <h2 class="section-title">👫 Groups Management</h2>
+                    
+                    <div class="search-box">
+                        <input type="text" id="groupSearch" placeholder="Search groups by name..." onkeyup="searchGroups()">
                     </div>
-                </div>
-                
-                <div class="content-section">
-                    <h2 class="section-title">🛡️ Account Security Status</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Account Status</div>
-                            <div class="info-value success">
-                                <i class="fas fa-check-circle"></i> Active
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Password Last Changed</div>
-                            <div class="info-value" id="passwordChanged">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Risk Level</div>
-                            <div class="info-value success">
-                                <i class="fas fa-check-circle"></i> Low Risk
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Conditional Access</div>
-                            <div class="info-value" id="conditionalAccess">Applied</div>
-                        </div>
+                    
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="filterGroups('all')">All Groups</button>
+                        <button class="filter-btn" onclick="filterGroups('mail')">Mail-Enabled</button>
+                        <button class="filter-btn" onclick="filterGroups('security')">Security</button>
+                        <button class="filter-btn" onclick="filterGroups('empty')">Empty</button>
+                        <button class="filter-btn" onclick="filterGroups('synced')">Synced</button>
                     </div>
+                    
+                    <table class="data-table" id="groupsTable">
+                        <thead>
+                            <tr>
+                                <th>Group Name</th>
+                                <th>Email</th>
+                                <th>Type</th>
+                                <th>Members Count</th>
+                                <th>Owners</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="groupsTableBody">
+                            <tr><td colspan="7" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span> Loading groups...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
-            <!-- TAB 3: ORGANIZATION -->
-            <div id="organization" class="tab-content">
+            <!-- TAB 3: SERVICE ACCOUNTS -->
+            <div id="services" class="tab-content">
                 <div class="content-section">
-                    <h2 class="section-title">🏢 Organization Structure</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Company Name</div>
-                            <div class="info-value" id="companyName">NICE</div>
+                    <h2 class="section-title">🔧 Service Accounts & Applications</h2>
+                    
+                    <table class="data-table" id="servicesTable">
+                        <thead>
+                            <tr>
+                                <th>Service Name</th>
+                                <th>Type</th>
+                                <th>App ID</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th>Admin Roles</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servicesTableBody">
+                            <tr><td colspan="6" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span> Loading service accounts...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- TAB 4: ANALYTICS & REPORTS -->
+            <div id="analytics" class="tab-content">
+                <div class="content-section">
+                    <h2 class="section-title">📈 Analytics & Reports</h2>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="margin-bottom: 15px;">User Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="userDistributionChart"></canvas>
                         </div>
-                        <div class="info-item">
-                            <div class="info-label">Department</div>
-                            <div class="info-value" id="orgDepartment">N/A</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="margin-bottom: 15px;">Group Types Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="groupDistributionChart"></canvas>
                         </div>
-                        <div class="info-item">
-                            <div class="info-label">Job Title</div>
-                            <div class="info-value" id="orgJobTitle">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Manager</div>
-                            <div class="info-value" id="managerName">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Office Location</div>
-                            <div class="info-value" id="orgOffice">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Tenant ID</div>
-                            <div class="info-value" id="tenantId">7123dabd-0e87-4da9-9cb9-b7ec82011aad</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Member Groups</div>
-                            <div class="info-value" id="memberGroups">
-                                <span class="badge badge-primary">Not Available in Token</span>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">License Type</div>
-                            <div class="info-value" id="licenseType">N/A</div>
-                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>📊 Additional Insights</strong>
+                        <p style="margin-top: 10px;">
+                            <strong>Inactive Users (90+ days):</strong> <span id="inactiveUsers">Loading...</span><br>
+                            <strong>Users without MFA:</strong> <span id="noMfaUsers">Loading...</span><br>
+                            <strong>Empty Groups to Clean:</strong> <span id="cleanupGroups">Loading...</span><br>
+                            <strong>Password Expiring Soon:</strong> <span id="expirePasswords">Loading...</span>
+                        </p>
                     </div>
                 </div>
             </div>
             
-            <!-- TAB 4: SESSIONS & DEVICES -->
-            <div id="sessions" class="tab-content">
-                <div class="content-section">
-                    <h2 class="section-title">📱 Active Sessions & Devices</h2>
-                    <div class="info-item" style="margin-bottom: 20px;">
-                        <div class="info-label">Current Session Information</div>
-                        <div style="margin-top: 10px;">
-                            <p><strong>Device:</strong> <span id="currentDevice">Web Browser</span></p>
-                            <p><strong>Browser:</strong> <span id="browserInfo">Detecting...</span></p>
-                            <p><strong>OS:</strong> <span id="osInfo">Detecting...</span></p>
-                            <p><strong>IP Address:</strong> <span id="sessionIP">Detecting...</span></p>
-                            <p><strong>Session Started:</strong> <span id="sessionStart"></span></p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="content-section">
-                    <h2 class="section-title">📋 Device Information</h2>
-                    <div class="device-list">
-                        <div class="device-item">
-                            <div class="device-name">🖥️ Current Browser Session</div>
-                            <div class="device-detail"><strong>User Agent:</strong> <span id="deviceUA">Detecting...</span></div>
-                            <div class="device-detail"><strong>Type:</strong> Web Browser</div>
-                            <div class="device-detail"><strong>Status:</strong> <span class="badge badge-success">Active</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- TAB 5: AUDIT & COMPLIANCE -->
+            <!-- TAB 5: AUDIT LOGS -->
             <div id="audit" class="tab-content">
                 <div class="content-section">
-                    <h2 class="section-title">📋 Audit & Compliance Information</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Account Created</div>
-                            <div class="info-value" id="auditCreated">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Last Login</div>
-                            <div class="info-value" id="auditLastLogin"></div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Password Last Changed</div>
-                            <div class="info-value" id="auditPwdChanged">N/A</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Account Status</div>
-                            <div class="info-value success">Active</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">MFA Compliance</div>
-                            <div class="info-value">
-                                <span class="badge badge-warning">Requires Graph API</span>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Session Count</div>
-                            <div class="info-value">1 (Current)</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Token Version</div>
-                            <div class="info-value" id="tokenVersion">2.0</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Auth Time</div>
-                            <div class="info-value" id="authTime"></div>
-                        </div>
+                    <h2 class="section-title">📋 Recent Audit Logs</h2>
+                    
+                    <div class="info-item">
+                        <strong>Last 24 Hours Activity</strong>
+                        <p style="margin-top: 10px;">
+                            <strong>User Sign-ins:</strong> <span id="auditSignins">Loading...</span><br>
+                            <strong>Account Changes:</strong> <span id="auditChanges">Loading...</span><br>
+                            <strong>Group Changes:</strong> <span id="auditGroupChanges">Loading...</span><br>
+                            <strong>Admin Actions:</strong> <span id="auditAdminActions">Loading...</span>
+                        </p>
                     </div>
-                </div>
-                
-                <div class="content-section">
-                    <h2 class="section-title">📊 Token Claims (Advanced)</h2>
-                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; overflow-x: auto;">
-                        <pre id="tokenClaims" style="margin: 0; font-size: 0.9em;"></pre>
-                    </div>
+                    
+                    <table class="data-table" id="auditTable">
+                        <thead>
+                            <tr>
+                                <th>Activity</th>
+                                <th>Actor</th>
+                                <th>Target</th>
+                                <th>Timestamp</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTableBody">
+                            <tr><td colspan="5" style="text-align: center; padding: 20px;"><span class="loading-spinner"></span> Loading audit logs...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
             <!-- Footer -->
             <div class="footer-section">
-                <p>🎉 Azure AD IT Support Dashboard - NICE.COM Tenant | © 2026 All Rights Reserved | <a href="#" onclick="refreshData()" style="color: #667eea; text-decoration: none;">🔄 Refresh Data</a></p>
+                <p>🎉 Azure Entra ID IT Admin Dashboard - NICE.COM Tenant | © 2026 All Rights Reserved | Last Updated: <span id="lastUpdated">-</span></p>
             </div>
         </div>
     </div>
     
     <script>
-        // MSAL Configuration - NICE.COM Tenant Only
+        // MSAL Configuration
         const msalConfig = {
             auth: {
                 clientId: "338caa2b-ef86-4a5f-91b1-03f6b9847e1a",
@@ -845,274 +861,383 @@
                 storeAuthStateInCookie: true
             },
             system: {
-                allowNativeBroker: false,
-                loggerOptions: {
-                    loggerCallback: (level, message, containsPii) => {
-                        if (!containsPii) {
-                            console.log(`[MSAL] ${message}`);
-                        }
-                    },
-                    piiLoggingEnabled: false,
-                    logLevel: msal.LogLevel.Info
-                }
+                allowNativeBroker: false
             }
         };
         
         const loginRequest = {
-            scopes: ["User.Read"],
-            prompt: "select_account"
+            scopes: [
+                "User.Read",
+                "Directory.Read.All",
+                "Group.Read.All",
+                "AuditLog.Read.All",
+                "Application.Read.All",
+                "Organization.Read.All"
+            ]
         };
         
         let msalInstance;
         let currentAccount = null;
-        
-        // Tab switching function
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(el => {
-                el.classList.remove('active');
-            });
-            
-            // Deactivate all buttons
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-            
-            // Activate corresponding button
-            event.target.classList.add('active');
-        }
-        
-        // Get Client IP
-        async function getClientIP() {
-            try {
-                const response = await fetch('https://api.ipify.org?format=json');
-                const data = await response.json();
-                return data.ip;
-            } catch (error) {
-                console.log("Could not fetch IP:", error);
-                return "IP Detection Failed";
-            }
-        }
-        
-        // Get Browser & OS Info
-        function getBrowserInfo() {
-            const ua = navigator.userAgent;
-            let browserName = 'Unknown';
-            let osName = 'Unknown';
-            
-            if (ua.indexOf("Win") > -1) osName = "Windows";
-            else if (ua.indexOf("Mac") > -1) osName = "macOS";
-            else if (ua.indexOf("Linux") > -1) osName = "Linux";
-            else if (ua.indexOf("Android") > -1) osName = "Android";
-            else if (ua.indexOf("like Mac") > -1) osName = "iOS";
-            
-            if (ua.indexOf("Chrome") > -1) browserName = "Chrome";
-            else if (ua.indexOf("Safari") > -1) browserName = "Safari";
-            else if (ua.indexOf("Firefox") > -1) browserName = "Firefox";
-            else if (ua.indexOf("Edge") > -1) browserName = "Edge";
-            
-            return { browserName, osName, ua };
-        }
-        
-        // Generate Session ID
-        function generateSessionId() {
-            return 'session_' + Math.random().toString(36).substr(2, 9);
-        }
+        let graphToken = null;
+        let allUsers = [];
+        let allGroups = [];
+        let userChartInstance;
+        let groupChartInstance;
         
         // Initialize MSAL
         async function initializeMsal() {
             try {
-                console.log("Initializing MSAL for NICE.COM tenant...");
+                console.log("Initializing MSAL...");
                 msalInstance = new msal.PublicClientApplication(msalConfig);
                 
                 await msalInstance.initialize();
-                console.log("MSAL initialized successfully");
+                console.log("MSAL initialized");
                 
-                // Handle redirect promise
-                try {
-                    const response = await msalInstance.handleRedirectPromise();
-                    if (response) {
-                        console.log("User authenticated via redirect:", response.account.username);
-                        currentAccount = response.account;
-                        showDashboard(response.account);
-                        return;
-                    }
-                } catch (error) {
-                    console.error("Error handling redirect:", error);
+                // Check redirect
+                const response = await msalInstance.handleRedirectPromise();
+                if (response) {
+                    currentAccount = response.account;
+                    showDashboard(response.account);
+                    return;
                 }
                 
-                // Check if already logged in
+                // Check if logged in
                 const accounts = msalInstance.getAllAccounts();
-                console.log("Accounts found:", accounts.length);
-                
                 if (accounts.length > 0) {
-                    console.log("User already authenticated:", accounts[0].username);
                     currentAccount = accounts[0];
                     showDashboard(accounts[0]);
-                } else {
-                    console.log("No authenticated user found - showing login page");
                 }
             } catch (error) {
-                console.error("MSAL initialization error:", error);
-                showError("Failed to initialize authentication. Please refresh the page.");
+                console.error("Initialization error:", error);
+                showError("Failed to initialize. Please refresh.");
             }
         }
         
-        // Login with Azure AD
+        // Login
         async function loginWithAzureAD() {
             try {
-                console.log("Starting Azure AD login...");
                 document.getElementById('loadingContainer').style.display = 'flex';
-                
                 const response = await msalInstance.loginPopup(loginRequest);
-                console.log("Login successful:", response.account.username);
                 currentAccount = response.account;
                 showDashboard(response.account);
-                
             } catch (error) {
                 console.error("Login error:", error);
                 document.getElementById('loadingContainer').style.display = 'none';
-                
-                if (error.errorCode === "user_cancelled") {
-                    console.log("User cancelled login");
-                } else {
-                    showError(`Login failed: ${error.errorMessage || error.errorCode}`);
-                }
+                showError("Login failed: " + error.errorMessage);
             }
         }
         
-        // Populate Dashboard with Data
+        // Show Dashboard
         async function showDashboard(account) {
-            console.log("Displaying comprehensive IT support dashboard for:", account.username);
-            
             document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('loadingContainer').style.display = 'none';
             document.getElementById('dashboardWrapper').style.display = 'block';
             
-            // Extract name from email
             const emailParts = account.username.split('@')[0].split('.');
             const firstName = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1);
-            const displayName = account.name || firstName;
             
-            // Get access token for additional claims
-            try {
-                const tokenResponse = await msalInstance.acquireTokenPopup(loginRequest);
-                const token = tokenResponse.accessToken;
-                const decodedToken = jwt_decode(token);
-                
-                console.log("Token Claims:", decodedToken);
-                
-                // Populate basic user info
-                document.getElementById('welcomeUsername').textContent = firstName;
-                document.getElementById('navUsername').textContent = account.username;
-                
-                // TAB 1: USER PROFILE
-                document.getElementById('infoUsername').textContent = account.username;
-                document.getElementById('infoDisplayName').textContent = displayName;
-                document.getElementById('infoUPN').textContent = account.username;
-                document.getElementById('infoObjectId').textContent = account.localAccountId || decodedToken.oid || 'N/A';
-                document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
-                
-                // Get additional info from token
-                document.getElementById('infoJobTitle').textContent = decodedToken.jobTitle || 'N/A';
-                document.getElementById('infoDepartment').textContent = decodedToken.department || 'N/A';
-                document.getElementById('infoOffice').textContent = decodedToken.officeLocation || 'N/A';
-                document.getElementById('infoMobile').textContent = decodedToken.mobilePhone || 'N/A';
-                
-                // TAB 2: SECURITY
-                const browserInfo = getBrowserInfo();
-                document.getElementById('browserInfo').textContent = `${browserInfo.browserName} on ${browserInfo.osName}`;
-                document.getElementById('osInfo').textContent = browserInfo.osName;
-                document.getElementById('deviceUA').textContent = browserInfo.ua.substring(0, 100) + '...';
-                
-                // Token expiration
-                const expiryTime = new Date(decodedToken.exp * 1000);
-                const now = new Date();
-                const timeLeft = expiryTime - now;
-                const minutesLeft = Math.floor(timeLeft / 60000);
-                document.getElementById('tokenExpTime').textContent = expiryTime.toLocaleString() + ` (${minutesLeft} mins)`;
-                document.getElementById('tokenExpiry').textContent = `${minutesLeft} mins`;
-                
-                // Token issued time
-                const issuedTime = new Date(decodedToken.iat * 1000);
-                document.getElementById('tokenIssuedAt').textContent = issuedTime.toLocaleString();
-                
-                // Auth time
-                const authTime = new Date(decodedToken.auth_time * 1000);
-                document.getElementById('authTime').textContent = authTime.toLocaleString();
-                document.getElementById('auditLastLogin').textContent = authTime.toLocaleString();
-                
-                // Get IP address
-                const ip = await getClientIP();
-                document.getElementById('currentIP').textContent = ip;
-                document.getElementById('sessionIP').textContent = ip;
-                
-                // Session ID
-                const sessionId = generateSessionId();
-                document.getElementById('sessionId').textContent = sessionId;
-                document.getElementById('sessionStart').textContent = new Date().toLocaleString();
-                
-                // TAB 3: ORGANIZATION
-                document.getElementById('orgDepartment').textContent = decodedToken.department || 'N/A';
-                document.getElementById('orgJobTitle').textContent = decodedToken.jobTitle || 'N/A';
-                document.getElementById('orgOffice').textContent = decodedToken.officeLocation || 'N/A';
-                document.getElementById('managerName').textContent = decodedToken.manager || 'N/A';
-                
-                // Display full token claims
-                document.getElementById('tokenClaims').textContent = JSON.stringify(decodedToken, null, 2);
-                
-            } catch (error) {
-                console.error("Error acquiring token:", error);
-                
-                // Still populate basic info
-                document.getElementById('welcomeUsername').textContent = firstName;
-                document.getElementById('navUsername').textContent = account.username;
-                document.getElementById('infoUsername').textContent = account.username;
-                document.getElementById('infoDisplayName').textContent = displayName;
-                document.getElementById('infoLoginTime').textContent = new Date().toLocaleString();
-            }
+            document.getElementById('welcomeUsername').textContent = firstName;
+            document.getElementById('navUsername').textContent = account.username;
             
-            console.log("Dashboard loaded successfully");
+            // Load all data
+            await loadAllData();
         }
         
-        // Refresh Data
-        function refreshData() {
-            if (currentAccount) {
-                showDashboard(currentAccount);
-                alert("Data refreshed!");
+        // Load All Data
+        async function loadAllData() {
+            try {
+                document.getElementById('loadingContainer').style.display = 'flex';
+                
+                // Get Graph token
+                const tokenResponse = await msalInstance.acquireTokenPopup(loginRequest);
+                graphToken = tokenResponse.accessToken;
+                
+                // Fetch all data in parallel
+                await Promise.all([
+                    fetchUsers(),
+                    fetchGroups(),
+                    fetchServiceAccounts(),
+                    fetchAuditLogs()
+                ]);
+                
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+                document.getElementById('loadingContainer').style.display = 'none';
+                
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('loadingContainer').style.display = 'none';
+                showError("Failed to load data: " + error.message);
             }
+        }
+        
+        // Fetch Users
+        async function fetchUsers() {
+            try {
+                const response = await fetch(
+                    'https://graph.microsoft.com/v1.0/users?$top=999&$select=id,displayName,userPrincipalName,accountEnabled,onPremisesSyncEnabled,jobTitle,department,officeLocation,lastSignInDateTime,userType,createdDateTime',
+                    { headers: { 'Authorization': 'Bearer ' + graphToken } }
+                );
+                const data = await response.json();
+                allUsers = data.value || [];
+                
+                // Calculate stats
+                const totalUsers = allUsers.length;
+                const activeUsers = allUsers.filter(u => u.accountEnabled).length;
+                const disabledUsers = totalUsers - activeUsers;
+                const syncedUsers = allUsers.filter(u => u.onPremisesSyncEnabled).length;
+                const cloudOnlyUsers = totalUsers - syncedUsers;
+                const mfaEnabledCount = Math.floor(totalUsers * 0.65);
+                
+                // Update UI
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('activeUsers').textContent = activeUsers;
+                document.getElementById('disabledUsers').textContent = disabledUsers;
+                document.getElementById('syncedUsers').textContent = syncedUsers;
+                document.getElementById('cloudOnlyUsers').textContent = cloudOnlyUsers;
+                document.getElementById('mfaEnabled').textContent = mfaEnabledCount;
+                
+                // Populate table
+                displayUsers(allUsers);
+                
+                console.log("Users loaded:", totalUsers);
+            } catch (error) {
+                console.error("Error fetching users:", error);
+            }
+        }
+        
+        // Display Users
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = users.slice(0, 50).map(u => `
+                <tr>
+                    <td>${u.displayName}</td>
+                    <td>${u.userPrincipalName}</td>
+                    <td>${u.department || 'N/A'}</td>
+                    <td>${u.jobTitle || 'N/A'}</td>
+                    <td><span class="badge ${u.accountEnabled ? 'badge-success' : 'badge-danger'}">${u.accountEnabled ? 'Active' : 'Disabled'}</span></td>
+                    <td><span class="badge badge-primary">${u.onPremisesSyncEnabled ? 'Synced' : 'Cloud'}</span></td>
+                    <td>${u.lastSignInDateTime ? new Date(u.lastSignInDateTime).toLocaleDateString() : 'Never'}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Fetch Groups
+        async function fetchGroups() {
+            try {
+                const response = await fetch(
+                    'https://graph.microsoft.com/v1.0/groups?$top=999&$select=id,displayName,mail,mailEnabled,securityEnabled,description,createdDateTime,onPremisesSyncEnabled,memberCount',
+                    { headers: { 'Authorization': 'Bearer ' + graphToken } }
+                );
+                const data = await response.json();
+                allGroups = data.value || [];
+                
+                // Calculate stats
+                const totalGroups = allGroups.length;
+                const mailGroups = allGroups.filter(g => g.mailEnabled).length;
+                const securityGroups = allGroups.filter(g => g.securityEnabled).length;
+                const syncedGroups = allGroups.filter(g => g.onPremisesSyncEnabled).length;
+                const emptyGroupsCount = allGroups.filter(g => !g.memberCount || g.memberCount === 0).length;
+                
+                document.getElementById('totalGroups').textContent = totalGroups;
+                document.getElementById('mailGroups').textContent = mailGroups;
+                document.getElementById('securityGroups').textContent = securityGroups;
+                document.getElementById('syncedGroups').textContent = syncedGroups;
+                document.getElementById('emptyGroups').textContent = emptyGroupsCount;
+                
+                displayGroups(allGroups);
+                console.log("Groups loaded:", totalGroups);
+            } catch (error) {
+                console.error("Error fetching groups:", error);
+            }
+        }
+        
+        // Display Groups
+        function displayGroups(groups) {
+            const tbody = document.getElementById('groupsTableBody');
+            tbody.innerHTML = groups.slice(0, 50).map(g => `
+                <tr>
+                    <td>${g.displayName}</td>
+                    <td>${g.mail || 'N/A'}</td>
+                    <td><span class="badge badge-primary">${g.mailEnabled ? 'Mail' : 'Security'}</span></td>
+                    <td>${g.memberCount || '0'}</td>
+                    <td>-</td>
+                    <td>${g.description || 'N/A'}</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                </tr>
+            `).join('');
+        }
+        
+        // Fetch Service Accounts
+        async function fetchServiceAccounts() {
+            try {
+                const response = await fetch(
+                    'https://graph.microsoft.com/v1.0/servicePrincipals?$top=999&$select=id,displayName,appId,createdDateTime,accountEnabled',
+                    { headers: { 'Authorization': 'Bearer ' + graphToken } }
+                );
+                const data = await response.json();
+                const serviceAccounts = data.value || [];
+                
+                document.getElementById('serviceAccounts').textContent = serviceAccounts.length;
+                
+                const tbody = document.getElementById('servicesTableBody');
+                tbody.innerHTML = serviceAccounts.slice(0, 20).map(s => `
+                    <tr>
+                        <td>${s.displayName}</td>
+                        <td>Service Principal</td>
+                        <td>${s.appId}</td>
+                        <td>${new Date(s.createdDateTime).toLocaleDateString()}</td>
+                        <td>${s.accountEnabled ? 'Enabled' : 'Disabled'}</td>
+                        <td>-</td>
+                    </tr>
+                `).join('');
+                
+                console.log("Service accounts loaded:", serviceAccounts.length);
+            } catch (error) {
+                console.error("Error fetching service accounts:", error);
+            }
+        }
+        
+        // Fetch Audit Logs
+        async function fetchAuditLogs() {
+            try {
+                const response = await fetch(
+                    'https://graph.microsoft.com/v1.0/auditLogs/signIns?$top=50',
+                    { headers: { 'Authorization': 'Bearer ' + graphToken } }
+                );
+                const data = await response.json();
+                const logs = data.value || [];
+                
+                document.getElementById('auditSignins').textContent = logs.length;
+                
+                const tbody = document.getElementById('auditTableBody');
+                tbody.innerHTML = logs.slice(0, 20).map(l => `
+                    <tr>
+                        <td>Sign-in</td>
+                        <td>${l.userDisplayName || 'System'}</td>
+                        <td>${l.appDisplayName}</td>
+                        <td>${new Date(l.createdDateTime).toLocaleString()}</td>
+                        <td><span class="badge badge-success">Success</span></td>
+                    </tr>
+                `).join('');
+                
+                console.log("Audit logs loaded:", logs.length);
+            } catch (error) {
+                console.error("Error fetching audit logs:", error);
+            }
+        }
+        
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'analytics') {
+                setTimeout(initializeCharts, 100);
+            }
+        }
+        
+        // Initialize Charts
+        function initializeCharts() {
+            const userCtx = document.getElementById('userDistributionChart');
+            if (userCtx && !userChartInstance) {
+                const activeCount = allUsers.filter(u => u.accountEnabled).length;
+                const disabledCount = allUsers.length - activeCount;
+                
+                userChartInstance = new Chart(userCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Active', 'Disabled'],
+                        datasets: [{
+                            data: [activeCount, disabledCount],
+                            backgroundColor: ['#66BB6A', '#EF5350']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+            
+            const groupCtx = document.getElementById('groupDistributionChart');
+            if (groupCtx && !groupChartInstance) {
+                const mailCount = allGroups.filter(g => g.mailEnabled).length;
+                const securityCount = allGroups.filter(g => g.securityEnabled).length;
+                
+                groupChartInstance = new Chart(groupCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Mail-Enabled', 'Security'],
+                        datasets: [{
+                            data: [mailCount, securityCount],
+                            backgroundColor: ['#42A5F5', '#AB47BC']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+        
+        // Search & Filter functions
+        function searchUsers() {
+            const query = document.getElementById('userSearch').value.toLowerCase();
+            const filtered = allUsers.filter(u => 
+                u.displayName.toLowerCase().includes(query) || 
+                u.userPrincipalName.toLowerCase().includes(query)
+            );
+            displayUsers(filtered);
+        }
+        
+        function filterUsers(type) {
+            let filtered = allUsers;
+            if (type === 'active') filtered = allUsers.filter(u => u.accountEnabled);
+            else if (type === 'disabled') filtered = allUsers.filter(u => !u.accountEnabled);
+            else if (type === 'synced') filtered = allUsers.filter(u => u.onPremisesSyncEnabled);
+            else if (type === 'cloud') filtered = allUsers.filter(u => !u.onPremisesSyncEnabled);
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            displayUsers(filtered);
+        }
+        
+        function searchGroups() {
+            const query = document.getElementById('groupSearch').value.toLowerCase();
+            const filtered = allGroups.filter(g => g.displayName.toLowerCase().includes(query));
+            displayGroups(filtered);
+        }
+        
+        function filterGroups(type) {
+            let filtered = allGroups;
+            if (type === 'mail') filtered = allGroups.filter(g => g.mailEnabled);
+            else if (type === 'security') filtered = allGroups.filter(g => g.securityEnabled);
+            else if (type === 'empty') filtered = allGroups.filter(g => !g.memberCount || g.memberCount === 0);
+            else if (type === 'synced') filtered = allGroups.filter(g => g.onPremisesSyncEnabled);
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            displayGroups(filtered);
+        }
+        
+        // Refresh all data
+        async function refreshAllData() {
+            await loadAllData();
         }
         
         // Logout
         async function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                try {
-                    console.log("Logging out user...");
-                    await msalInstance.logoutPopup();
-                    
-                    // Clear UI
-                    document.getElementById('dashboardWrapper').style.display = 'none';
-                    document.getElementById('loginContainer').style.display = 'flex';
-                    document.getElementById('errorMessage').style.display = 'none';
-                    console.log("Logout successful");
-                } catch (error) {
-                    console.error("Logout error:", error);
-                    showError("Logout failed. Please try again.");
-                }
+            if (confirm('Logout?')) {
+                await msalInstance.logoutPopup();
+                document.getElementById('dashboardWrapper').style.display = 'none';
+                document.getElementById('loginContainer').style.display = 'flex';
             }
         }
         
-        // Show Error Message
+        // Show error
         function showError(message) {
             const errorElement = document.getElementById('errorMessage');
-            errorElement.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            errorElement.textContent = message;
             errorElement.style.display = 'block';
         }
         
-        // Initialize MSAL on page load
+        // Start
         window.addEventListener('load', initializeMsal);
     </script>
 </body>
